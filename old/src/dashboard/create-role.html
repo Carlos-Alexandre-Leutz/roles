@@ -1,0 +1,487 @@
+<!doctype html>
+
+<html class="dark" lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ROLES - Event Manager</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-low": "#131313",
+              "on-background": "#ffffff",
+              outline: "#777575",
+              secondary: "#e5e2e1",
+              primary: "#db90ff",
+              "secondary-dim": "#d6d4d3",
+              "primary-container": "#d37bff",
+              "on-surface": "#ffffff",
+              "surface-tint": "#db90ff",
+              "inverse-primary": "#9027c4",
+              "on-primary": "#4e0070",
+              "secondary-fixed-dim": "#d6d4d3",
+              "on-primary-fixed": "#000000",
+              "outline-variant": "#494847",
+              "primary-fixed": "#d37bff",
+              "surface-variant": "#262626",
+              "tertiary-fixed-dim": "#af91ff",
+              "tertiary-fixed": "#bba2ff",
+              "surface-container-lowest": "#000000",
+              "surface-bright": "#2c2c2c",
+              "on-tertiary": "#270068",
+              "on-error-container": "#ffb2b9",
+              error: "#ff6e84",
+              "on-error": "#490013",
+              "on-secondary-fixed-variant": "#5c5b5b",
+              background: "#0e0e0e",
+              "surface-container-highest": "#262626",
+              "surface-container": "#1a1919",
+              "secondary-fixed": "#e5e2e1",
+              tertiary: "#aa8aff",
+              "secondary-container": "#474746",
+              "inverse-on-surface": "#565554",
+              "inverse-surface": "#fcf8f8",
+              "on-tertiary-container": "#ffffff",
+              "on-secondary-container": "#d2d0cf",
+              "on-secondary": "#525151",
+              "surface-dim": "#0e0e0e",
+              "on-tertiary-fixed-variant": "#4500a9",
+              "on-secondary-fixed": "#403f3f",
+              "primary-fixed-dim": "#cb66fe",
+              "primary-dim": "#d277ff",
+              "tertiary-container": "#7631fd",
+              "on-tertiary-fixed": "#1e0053",
+              "tertiary-dim": "#844eff",
+              surface: "#0e0e0e",
+              "on-surface-variant": "#adaaaa",
+              "error-dim": "#d73357",
+              "error-container": "#a70138",
+              "on-primary-container": "#3c0057",
+              "surface-container-high": "#201f1f",
+              "on-primary-fixed-variant": "#4a006b",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            fontFamily: {
+              headline: ["Plus Jakarta Sans"],
+              body: ["Manrope"],
+              label: ["Manrope"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      body {
+        background-color: #0e0e0e;
+        color: #ffffff;
+        font-family: "Manrope", sans-serif;
+      }
+      .neon-glow {
+        box-shadow: 0 0 64px rgba(157, 0, 255, 0.15);
+      }
+      .glass-modal {
+        background: rgba(38, 38, 38, 0.6);
+        backdrop-filter: blur(40px);
+        border: 0.5px solid rgba(219, 144, 255, 0.2);
+      }
+      .tonal-transition {
+        background: linear-gradient(to bottom, #131313, #0e0e0e);
+      }
+    </style>
+  </head>
+  <body class="overflow-hidden">
+    <!-- SideNavBar (Shared Component) -->
+    <aside
+      class="fixed left-0 top-0 h-full w-64 z-40 bg-[#131313] flex flex-col py-8 px-4 space-y-6 font-['Manrope'] font-medium"
+    >
+      <div class="flex items-center space-x-3 px-2 mb-8">
+        <div
+          class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shadow-[0_0_20px_rgba(219,144,255,0.3)]"
+        >
+          <span class="material-symbols-outlined text-on-primary"
+            >rocket_launch</span
+          >
+        </div>
+        <div>
+          <h1 class="text-xl font-black text-[#ffffff] tracking-tighter">
+            ROLES
+          </h1>
+          <p
+            class="text-[10px] text-on-surface-variant uppercase tracking-widest"
+          >
+            Event Manager
+          </p>
+        </div>
+      </div>
+      <nav class="flex-1 space-y-1">
+        <!-- Active Tab: Dashboard -->
+        <a
+          class="flex items-center space-x-3 px-4 py-3 text-[#ffffff] font-bold border-r-4 border-[#db90ff] bg-gradient-to-r from-[#db90ff1a] to-transparent transition-all"
+          href="#"
+        >
+          <span class="material-symbols-outlined" data-icon="dashboard"
+            >dashboard</span
+          >
+          <span>Dashboard</span>
+        </a>
+        <a
+          class="flex items-center space-x-3 px-4 py-3 text-[#adaaaa] hover:bg-[#201f1f] hover:text-[#ffffff] transition-all active:translate-x-1"
+          href="#"
+        >
+          <span class="material-symbols-outlined" data-icon="event">event</span>
+          <span>My Events</span>
+        </a>
+        <a
+          class="flex items-center space-x-3 px-4 py-3 text-[#adaaaa] hover:bg-[#201f1f] hover:text-[#ffffff] transition-all active:translate-x-1"
+          href="#"
+        >
+          <span class="material-symbols-outlined" data-icon="explore"
+            >explore</span
+          >
+          <span>Explore</span>
+        </a>
+        <a
+          class="flex items-center space-x-3 px-4 py-3 text-[#adaaaa] hover:bg-[#201f1f] hover:text-[#ffffff] transition-all active:translate-x-1"
+          href="#"
+        >
+          <span class="material-symbols-outlined" data-icon="group">group</span>
+          <span>Friends</span>
+        </a>
+      </nav>
+      <button
+        class="w-full py-4 rounded-full bg-gradient-to-r from-[#db90ff] to-[#d37bff] text-on-primary font-bold shadow-[0_0_30px_rgba(219,144,255,0.2)] active:scale-95 transition-transform"
+      >
+        Create New Rolê
+      </button>
+      <div class="pt-6 border-t border-outline-variant/10 space-y-1">
+        <a
+          class="flex items-center space-x-3 px-4 py-2 text-[#adaaaa] hover:text-[#ffffff] transition-colors text-sm"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-lg" data-icon="help"
+            >help</span
+          >
+          <span>Help</span>
+        </a>
+        <a
+          class="flex items-center space-x-3 px-4 py-2 text-[#adaaaa] hover:text-[#ffffff] transition-colors text-sm"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-lg" data-icon="shield"
+            >shield</span
+          >
+          <span>Privacy</span>
+        </a>
+      </div>
+    </aside>
+    <!-- Main Content (Blurred Background) -->
+    <main
+      class="ml-64 min-h-screen bg-surface p-8 blur-md brightness-50 pointer-events-none"
+    >
+      <!-- TopNavBar (Shared Component Placeholder) -->
+      <header
+        class="fixed top-0 left-64 right-0 h-16 bg-[#0e0e0e] shadow-[0_0_64px_rgba(157,0,255,0.1)] flex justify-between items-center px-8 z-30"
+      >
+        <div
+          class="flex items-center space-x-4 bg-surface-container-low px-4 py-2 rounded-full w-96"
+        >
+          <span class="material-symbols-outlined text-on-surface-variant"
+            >search</span
+          >
+          <span class="text-on-surface-variant text-sm"
+            >Procurar eventos...</span
+          >
+        </div>
+        <div class="flex items-center space-x-6">
+          <span class="material-symbols-outlined text-on-surface-variant"
+            >notifications</span
+          >
+          <span class="material-symbols-outlined text-on-surface-variant"
+            >settings</span
+          >
+          <div class="flex items-center space-x-3">
+            <span class="text-sm font-bold text-on-surface">Gabriel Lima</span>
+            <img
+              alt="User profile"
+              class="w-8 h-8 rounded-full border border-primary/30"
+              data-alt="professional portrait of a young man with short dark hair in a dark studio setting with soft purple rim light"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKBTVN6EhyBDOFcsHvxNPgRPpe8-VE4t1O2rphkSOIiU6zrLR0aF0etjJLE80VWvOVA5IE6awl5pbHCxed6iuD0dMzHp8jJ9Px5yWgPbFVCxNXRIL7gXLcDUvMxLFlJAHoBFSBXkUxCd2YtAwDsDGsNrXaCSXo2-nRJDgDCToUGLax8YyE8Y8dYDPNlc1VMNOh_ZKuxmMBq34UV7Qh-H3xINTVbabnojVRvmljEnjDeNc5OWvilP9z7ABWrMTRyqvs6ZQpZhJlB4XI"
+            />
+          </div>
+        </div>
+      </header>
+      <div class="mt-20">
+        <h2 class="text-5xl font-extrabold font-headline tracking-tighter mb-8">
+          Seu <span class="text-primary">Dashboard</span>
+        </h2>
+        <!-- Bento Grid Mockup for Background -->
+        <div class="grid grid-cols-12 gap-6">
+          <div class="col-span-8 h-64 bg-surface-container-low rounded-3xl p-6">
+            <div
+              class="w-full h-full bg-surface-container-high rounded-2xl flex items-center justify-center"
+            >
+              <span class="text-on-surface-variant"
+                >Estatísticas de Engajamento</span
+              >
+            </div>
+          </div>
+          <div class="col-span-4 h-64 bg-surface-container-low rounded-3xl p-6">
+            <div
+              class="w-full h-full bg-primary/5 border border-primary/10 rounded-2xl flex items-center justify-center"
+            >
+              <span class="text-primary font-bold"
+                >Próximo Evento: Show de Jazz</span
+              >
+            </div>
+          </div>
+          <div
+            class="col-span-4 h-80 bg-surface-container-low rounded-3xl"
+          ></div>
+          <div
+            class="col-span-4 h-80 bg-surface-container-low rounded-3xl"
+          ></div>
+          <div
+            class="col-span-4 h-80 bg-surface-container-low rounded-3xl"
+          ></div>
+        </div>
+      </div>
+    </main>
+    <!-- Modal Overlay -->
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+    >
+      <!-- Create New Rolê Modal -->
+      <div
+        class="glass-modal w-full max-w-2xl rounded-[2.5rem] p-10 shadow-[0_0_100px_rgba(157,0,255,0.2)] overflow-hidden relative"
+      >
+        <!-- Background Glow Decoration -->
+        <div
+          class="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 blur-[100px] rounded-full"
+        ></div>
+        <div class="relative z-10">
+          <header class="mb-8">
+            <h2
+              class="text-4xl font-extrabold font-headline tracking-tight text-on-surface mb-2"
+            >
+              Criar Novo <span class="text-primary">Rolê</span>
+            </h2>
+            <p class="text-on-surface-variant font-body">
+              Organize sua próxima experiência épica com seus amigos.
+            </p>
+          </header>
+          <form class="space-y-6">
+            <!-- Event Name -->
+            <div class="space-y-2">
+              <label class="text-sm font-bold text-on-surface-variant ml-1"
+                >Nome do Rolê</label
+              >
+              <div class="relative">
+                <input
+                  class="w-full bg-surface-container-high border-none rounded-2xl py-4 px-6 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary/50 transition-all"
+                  placeholder="Ex: Churrasco na Laje ou Rave Secreta"
+                  type="text"
+                />
+              </div>
+            </div>
+            <!-- Date and Location Grid -->
+            <div class="grid grid-cols-2 gap-6">
+              <div class="space-y-2">
+                <label class="text-sm font-bold text-on-surface-variant ml-1"
+                  >Data e Hora</label
+                >
+                <div
+                  class="flex items-center bg-surface-container-high rounded-2xl px-4"
+                >
+                  <span class="material-symbols-outlined text-primary"
+                    >calendar_today</span
+                  >
+                  <input
+                    class="w-full bg-transparent border-none py-4 px-2 text-on-surface focus:ring-0"
+                    type="datetime-local"
+                  />
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="text-sm font-bold text-on-surface-variant ml-1"
+                  >Local</label
+                >
+                <div
+                  class="flex items-center bg-surface-container-high rounded-2xl px-4"
+                >
+                  <span class="material-symbols-outlined text-primary"
+                    >location_on</span
+                  >
+                  <input
+                    class="w-full bg-transparent border-none py-4 px-2 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-0"
+                    placeholder="São Paulo, SP"
+                    type="text"
+                  />
+                </div>
+              </div>
+            </div>
+            <!-- Invite Friends Section -->
+            <div class="space-y-3">
+              <label
+                class="text-sm font-bold text-on-surface-variant ml-1 flex justify-between"
+              >
+                <span>Convidar Amigos</span>
+                <span class="text-primary cursor-pointer hover:underline"
+                  >Ver Todos</span
+                >
+              </label>
+              <div class="relative mb-4">
+                <input
+                  class="w-full bg-surface-container-high border-none rounded-2xl py-3 pl-12 pr-4 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary/50"
+                  placeholder="Buscar por nome ou @username..."
+                  type="text"
+                />
+                <span
+                  class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60"
+                  >search</span
+                >
+              </div>
+              <!-- Friends List -->
+              <div class="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
+                <div
+                  class="flex-shrink-0 group cursor-pointer text-center space-y-1"
+                >
+                  <div
+                    class="w-14 h-14 rounded-full border-2 border-primary p-0.5 relative"
+                  >
+                    <img
+                      alt="Friend 1"
+                      class="w-full h-full rounded-full object-cover"
+                      data-alt="close up of a stylish young man with glasses smiling in city street lighting"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqO4SvP6GqAsqGdmwtE_v3FsZx41Xt7Q0J6nSrtrNiSYMGxSVXMik6T3bsxBKxVuYkHGUoGnIDQacmtlUWb15SQx_niZbul79t21xBTSZYgxDdNPb3pA7M-hHSvbce9OXLX_Y2bh-mtff-GbzO8c8G3-jswwLNm3dUMQRV-Y7A4cARoChLIv06xaR54nrmtCDO6F0wikyot3MwL5W_TKZigXi9m1xtyob-kHFPW55P0eMcTrWOkcVYzrHOZHyn_dhmGIxdyii29dn_"
+                    />
+                    <div
+                      class="absolute -bottom-1 -right-1 bg-primary text-on-primary rounded-full w-5 h-5 flex items-center justify-center border-2 border-surface-container-high"
+                    >
+                      <span
+                        class="material-symbols-outlined text-[12px] font-bold"
+                        >check</span
+                      >
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-on-surface font-bold">Lucas</p>
+                </div>
+                <div
+                  class="flex-shrink-0 group cursor-pointer text-center space-y-1"
+                >
+                  <div
+                    class="w-14 h-14 rounded-full border-2 border-transparent p-0.5 hover:border-primary/50 transition-colors"
+                  >
+                    <img
+                      alt="Friend 2"
+                      class="w-full h-full rounded-full object-cover"
+                      data-alt="portrait of a young woman with a warm smile and curly hair in soft golden lighting"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEsU6M5cIce57WdFMCd5Vz_YvUurLz1X5EBX6Qe97MpuPbzTi3LnTq_vicSPbOdFEjW3eGa_d61I3baHn5-TFfDfdxy3tELFl-kiSWs85T0op8otyw_meNIkELVefb1ilufz3ZNvNqOKYeYaVp3IziLCKSjm4e5-STl3CpGcA3QQMpUed0gbivB5dHIQuEJvDvrE5irwDdXxkH_WyaWYVzQD-mUnvdqpp4wYFcRW6pRO4WIDFiAveKjiPBDVM7VaVeT4hk5lfvn8Ts"
+                    />
+                  </div>
+                  <p
+                    class="text-[10px] text-on-surface-variant group-hover:text-on-surface"
+                  >
+                    Ana
+                  </p>
+                </div>
+                <div
+                  class="flex-shrink-0 group cursor-pointer text-center space-y-1"
+                >
+                  <div
+                    class="w-14 h-14 rounded-full border-2 border-transparent p-0.5 hover:border-primary/50 transition-colors"
+                  >
+                    <img
+                      alt="Friend 3"
+                      class="w-full h-full rounded-full object-cover"
+                      data-alt="middle aged man with a confident look and sharp features in dramatic dark lighting"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-ELt33CUhsmcgYreCq1ugjjwlJCODa1p6LNre96aBOXHreTn5ABCS3A56C06OTMu3ra0VnuqE6Pxo-ydMzSlCN027_AYltssQ_6qIq-f9FOiYaYW3Lv85HQWOTDuTZH46OL4P1JqQFfNzYOFTCv9cbQPIgQWl9BRBwaKfDzyBOXD-p2sGWGHpX0v_jkRHkghte_QEfnN2Wwjy4l_xYVH1DsseErse1GtlS4WM5wzdWXaLhuQMtasU_nj1wCrs56lCOEhe90fpclRz"
+                    />
+                  </div>
+                  <p
+                    class="text-[10px] text-on-surface-variant group-hover:text-on-surface"
+                  >
+                    Beto
+                  </p>
+                </div>
+                <div
+                  class="flex-shrink-0 group cursor-pointer text-center space-y-1"
+                >
+                  <div
+                    class="w-14 h-14 rounded-full border-2 border-transparent p-0.5 hover:border-primary/50 transition-colors"
+                  >
+                    <img
+                      alt="Friend 4"
+                      class="w-full h-full rounded-full object-cover"
+                      data-alt="young woman with a serious and artistic expression in soft purple atmospheric studio lighting"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDw0u3advBtCqtd7tBYeXKGeGbxtaq8IgPbvc62nP39lgPQ0UBmFmkxIQpc6W-7gHiL5SJ6JOewaLhItNd4eIMo4BgPh_97EQvWCp23yYdMUS5pyj3WeKIuZw003bRv7gUgeEXXTkQAhpWl-3YeV1PO8EIuZr5uYVgWFZ-VjdvL-DwnYD5vw1aBCZBUKiGxD7Hp1u_PGeSw8V8XDMWAlmo5iABhM9-8SHYYARCGC7SSdmFtNs2O0CPAPpk--QwzDi-edUfyYd-68ibH"
+                    />
+                  </div>
+                  <p
+                    class="text-[10px] text-on-surface-variant group-hover:text-on-surface"
+                  >
+                    Clara
+                  </p>
+                </div>
+                <div
+                  class="flex-shrink-0 group cursor-pointer text-center space-y-1"
+                >
+                  <div
+                    class="w-14 h-14 rounded-full bg-surface-container-highest flex items-center justify-center border-2 border-dashed border-outline-variant hover:border-primary transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-primary"
+                      >add</span
+                    >
+                  </div>
+                  <p class="text-[10px] text-on-surface-variant">Mais</p>
+                </div>
+              </div>
+            </div>
+            <!-- Actions -->
+            <div class="flex items-center justify-end space-x-4 pt-4">
+              <button
+                class="px-8 py-4 rounded-full text-on-surface-variant font-bold hover:bg-surface-variant/40 transition-colors active:scale-95"
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                class="px-10 py-4 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-extrabold shadow-[0_0_40px_rgba(219,144,255,0.3)] hover:brightness-110 active:scale-95 transition-all"
+                type="submit"
+              >
+                Criar Rolê
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

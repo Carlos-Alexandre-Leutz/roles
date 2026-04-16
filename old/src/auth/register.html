@@ -1,0 +1,221 @@
+<!doctype html>
+
+<html class="dark" lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ROLES - Cadastro</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-fixed": "#000000",
+              "surface-container-lowest": "#000000",
+              "on-tertiary-fixed": "#1e0053",
+              tertiary: "#aa8aff",
+              "secondary-fixed": "#e5e2e1",
+              primary: "#db90ff",
+              "on-primary": "#4e0070",
+              "primary-dim": "#d277ff",
+              "surface-container": "#1a1919",
+              secondary: "#e5e2e1",
+              "surface-container-high": "#201f1f",
+              "primary-container": "#d37bff",
+              "on-surface": "#ffffff",
+              "surface-container-highest": "#262626",
+              surface: "#0e0e0e",
+              "surface-container-low": "#131313",
+              "on-surface-variant": "#adaaaa",
+              error: "#ff6e84",
+              "outline-variant": "#494847",
+              background: "#0e0e0e",
+            },
+            fontFamily: {
+              headline: ["Plus Jakarta Sans"],
+              body: ["Manrope"],
+              label: ["Manrope"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      .glass-panel {
+        background: rgba(38, 38, 38, 0.6);
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
+      }
+      .neon-glow {
+        box-shadow: 0 0 40px rgba(219, 144, 255, 0.15);
+      }
+      .atmospheric-glow {
+        filter: blur(64px);
+        opacity: 0.15;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-surface font-body text-on-surface selection:bg-primary/30 min-h-screen flex flex-col items-center justify-center overflow-x-hidden"
+  >
+    <!-- Ambient Decorative Background Elements -->
+    <div
+      class="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary atmospheric-glow rounded-full pointer-events-none"
+    ></div>
+    <div
+      class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-tertiary-container atmospheric-glow rounded-full pointer-events-none"
+    ></div>
+    <!-- Top Navigation (Contextually Hidden/Simplified for Transactional Page) -->
+    <header
+      class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-[#131313] to-transparent"
+    >
+      <div
+        class="text-2xl font-black tracking-tighter text-white uppercase font-headline"
+      >
+        ROLES
+      </div>
+    </header>
+    <main
+      class="relative z-10 w-full max-w-md px-6 py-20 flex flex-col items-center"
+    >
+      <!-- Registration Card -->
+      <div
+        class="w-full glass-panel neon-glow rounded-[2rem] p-8 flex flex-col gap-8"
+      >
+        <!-- Header Section -->
+        <div class="text-center space-y-2">
+          <h1
+            class="font-headline text-4xl font-extrabold tracking-tight text-on-surface"
+          >
+            Join the <span class="text-primary">Stage</span>
+          </h1>
+          <p class="text-on-surface-variant text-sm tracking-wide">
+            Enter your details to create your profile
+          </p>
+        </div>
+        <!-- Form -->
+        <form class="flex flex-col gap-5">
+          <!-- Full Name Field -->
+          <div class="flex flex-col gap-2">
+            <label
+              class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant ml-1"
+              >Full Name</label
+            >
+            <div class="relative flex items-center">
+              <span
+                class="material-symbols-outlined absolute left-4 text-on-surface-variant text-lg"
+                >person</span
+              >
+              <input
+                class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-highest transition-all duration-300"
+                placeholder="John Doe"
+                type="text"
+              />
+            </div>
+          </div>
+          <!-- Email Field -->
+          <div class="flex flex-col gap-2">
+            <label
+              class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant ml-1"
+              >Email</label
+            >
+            <div class="relative flex items-center">
+              <span
+                class="material-symbols-outlined absolute left-4 text-on-surface-variant text-lg"
+                >mail</span
+              >
+              <input
+                class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-highest transition-all duration-300"
+                placeholder="john@roles.app"
+                type="email"
+              />
+            </div>
+          </div>
+          <!-- Password Field -->
+          <div class="flex flex-col gap-2">
+            <label
+              class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant ml-1"
+              >Password</label
+            >
+            <div class="relative flex items-center">
+              <span
+                class="material-symbols-outlined absolute left-4 text-on-surface-variant text-lg"
+                >lock</span
+              >
+              <input
+                class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-12 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-highest transition-all duration-300"
+                placeholder="••••••••"
+                type="password"
+              />
+              <span
+                class="material-symbols-outlined absolute right-4 text-on-surface-variant text-lg cursor-pointer hover:text-white"
+                >visibility</span
+              >
+            </div>
+          </div>
+          <!-- Confirm Password Field -->
+          <div class="flex flex-col gap-2">
+            <label
+              class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant ml-1"
+              >Confirm Password</label
+            >
+            <div class="relative flex items-center">
+              <span
+                class="material-symbols-outlined absolute left-4 text-on-surface-variant text-lg"
+                >verified_user</span
+              >
+              <input
+                class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-12 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-highest transition-all duration-300"
+                placeholder="••••••••"
+                type="password"
+              />
+            </div>
+          </div>
+          <!-- CTA Button -->
+          <button
+            class="mt-4 w-full bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-bold py-4 rounded-full shadow-lg active:scale-95 hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2"
+            type="submit"
+          >
+            Criar Conta
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </form>
+      </div>
+      <!-- Footer Link -->
+      <div class="mt-8 text-center">
+        <p class="text-on-surface-variant text-sm">
+          Já tem uma conta?
+          <a class="text-primary font-bold hover:underline ml-1" href="./login.html"
+            >Entrar</a
+          >
+        </p>
+      </div>
+    </main>
+  </body>
+</html>
