@@ -30,6 +30,7 @@
         </button>
         <div class="h-6 w-[1px] bg-outline-variant/20"></div>
         <button
+          @click="handleLogout()"
           class="flex items-center gap-2 text-[#adaaaa] hover:text-white transition-colors duration-300 font-headline font-bold active:scale-95 transition-transform"
         >
           <span class="material-symbols-outlined">logout</span>
@@ -40,3 +41,19 @@
     <slot></slot>
   </main>
 </template>
+<script setup>
+import { useRouter } from "vue-router";
+import { signOut } from "firebase/auth";
+import { auth } from "@/services/firebase"; // Importando o auth centralizado
+
+const router = useRouter();
+
+const handleLogout = async () => {
+  try {
+    await signOut(auth);
+    router.push("/login");
+  } catch (error) {
+    console.error("Erro ao deslogar:", error);
+  }
+};
+</script>

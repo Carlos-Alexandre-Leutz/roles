@@ -39,7 +39,7 @@
             </p>
           </div>
           <!-- Form -->
-          <form class="flex flex-col gap-5">
+          <form @submit.prevent="handleRegister" class="flex flex-col gap-5">
             <!-- Full Name Field -->
             <div class="flex flex-col gap-2">
               <label
@@ -54,6 +54,7 @@
                 <input
                   class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-highest transition-all duration-300"
                   placeholder="John Doe"
+                  v-model="fullName"
                   type="text"
                 />
               </div>
@@ -73,6 +74,7 @@
                   class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-highest transition-all duration-300"
                   placeholder="john@roles.app"
                   type="email"
+                  v-model="email"
                 />
               </div>
             </div>
@@ -90,11 +92,13 @@
                 <input
                   class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-12 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-highest transition-all duration-300"
                   placeholder="••••••••"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  v-model="password"
                 />
                 <span
+                  @click="togglePassword"
                   class="material-symbols-outlined absolute right-4 text-on-surface-variant text-lg cursor-pointer hover:text-white"
-                  >visibility</span
+                  >{{ showPassword ? "visibility_off" : "visibility" }}</span
                 >
               </div>
             </div>
@@ -112,19 +116,34 @@
                 <input
                   class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-12 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-highest transition-all duration-300"
                   placeholder="••••••••"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  v-model="confirmPassword"
                 />
               </div>
             </div>
             <!-- CTA Button -->
             <button
-              class="mt-4 w-full bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-bold py-4 rounded-full shadow-lg active:scale-95 hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2"
+              :disabled="isLoading"
+              class="mt-4 w-full bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-bold py-4 rounded-full shadow-lg active:scale-95 hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
             >
-              Criar Conta
-              <span class="material-symbols-outlined">arrow_forward</span>
+              <span v-if="isLoading">Criando conta...</span>
+              <template v-else>
+                Cadastrar
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </template>
             </button>
+            <p
+              v-if="feedbackMsg"
+              :class="[
+                'text-sm text-center font-medium mt-2 transition-all',
+                isError ? 'text-red-400' : 'text-primary',
+              ]"
+            >
+              {{ feedbackMsg }}
+            </p>
           </form>
+
           <!-- Social Divider -->
           <div class="flex items-center gap-4 py-2">
             <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
@@ -162,9 +181,9 @@
           <p class="text-on-surface-variant text-sm">
             Já tem uma conta?
             <RouterLink to="/login">
-               <a class="text-primary font-bold hover:underline ml-1" href="#">
-                 Entrar
-               </a>
+              <a class="text-primary font-bold hover:underline ml-1" href="#">
+                Entrar
+              </a>
             </RouterLink>
           </p>
         </div>
@@ -198,6 +217,96 @@
     </div>
   </div>
 </template>
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { auth } from "@/services/firebase";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+
+const router = useRouter();
+
+// Estados Reativos
+const fullName = ref("");
+const email = ref("");
+const password = ref("");
+const confirmPassword = ref("");
+const feedbackMsg = ref("");
+const isError = ref(true);
+const isLoading = ref(false);
+const showPassword = ref(false);
+
+const handleRegister = async () => {
+  console.log("asd");
+
+  // 1. Validações básicas
+  if (!fullName.value || !email.value || !password.value) {
+    displayFeedback("Por favor, preencha todos os campos.");
+    return;
+  }
+
+  if (password.value !== confirmPassword.value) {
+    displayFeedback("As senhas não coincidem.");
+    return;
+  }
+
+  if (password.value.length < 6) {
+    displayFeedback("A senha deve ter pelo menos 6 caracteres.");
+    return;
+  }
+
+  isLoading.value = true;
+  feedbackMsg.value = "";
+
+  try {
+    // 2. Criar usuário no Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+
+    // 3. Adicionar o Nome ao perfil do usuário (opcional, mas recomendado)
+    await updateProfile(userCredential.user, {
+      displayName: fullName.value,
+    });
+
+    displayFeedback("Conta criada com sucesso! Redirecionando...", false);
+
+    // 4. Redirecionar
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 1500);
+  } catch (error) {
+    console.error(error.code);
+    isError.value = true;
+
+    switch (error.code) {
+      case "auth/email-already-in-use":
+        displayFeedback("Este e-mail já está em uso.");
+        break;
+      case "auth/invalid-email":
+        displayFeedback("E-mail inválido.");
+        break;
+      case "auth/weak-password":
+        displayFeedback("Senha muito fraca.");
+        break;
+      default:
+        displayFeedback("Erro ao criar conta: " + error.message);
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const displayFeedback = (msg, errorStatus = true) => {
+  feedbackMsg.value = msg;
+  isError.value = errorStatus;
+};
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value;
+};
+</script>
 <style>
 .material-symbols-outlined {
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
@@ -213,10 +322,5 @@
 .atmospheric-glow {
   filter: blur(64px);
   opacity: 0.15;
-}
-</style>
-<style>
-body {
-  min-height: max(884px, 100dvh);
 }
 </style>

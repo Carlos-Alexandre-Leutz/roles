@@ -52,6 +52,7 @@
                 <input
                   class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 transition-all"
                   id="email"
+                  v-model="email"
                   placeholder="nome@exemplo.com"
                   type="email"
                 />
@@ -81,21 +82,29 @@
                   id="password"
                   placeholder="••••••••"
                   type="password"
+                  v-model="password"
+                  @keyup.enter="handleLogin"
                 />
               </div>
             </div>
             <!-- Message Paragraph (kept ID) -->
             <p
-              class="text-error text-xs font-medium min-h-[1rem] transition-all opacity-0"
-              id="mensagem"
-            ></p>
+              :class="[
+                'text-xs font-medium min-h-[1rem] transition-all',
+                feedbackMsg ? 'opacity-100' : 'opacity-0',
+                isError ? 'text-error' : 'text-primary',
+              ]"
+            >
+              {{ feedbackMsg }}
+            </p>
             <!-- Buttons Cluster -->
             <div class="space-y-4 pt-2">
               <button
-                class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-bold py-4 rounded-full active:scale-[0.98] transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40"
-                id="btn-entrar"
+                @click="handleLogin"
+                :disabled="isLoading"
+                class="w-full bg-gradient-to-r from-primary to-primary-container ..."
               >
-                Entrar
+                {{ isLoading ? "Carregando..." : "Entrar" }}
               </button>
               <div class="relative py-2">
                 <div class="absolute inset-0 flex items-center">
@@ -107,12 +116,12 @@
                   >
                 </div>
               </div>
-               <RouterLink to="/register">
-                 <button
-                 class="w-full bg-surface-variant/20 text-on-surface font-semibold py-4 rounded-full hover:bg-surface-variant/40 active:scale-[0.98] transition-all border border-outline-variant/15"
-                 id="btn-criar-conta"
-                 >
-                 Criar Nova Conta
+              <RouterLink to="/register">
+                <button
+                  class="w-full bg-surface-variant/20 text-on-surface font-semibold py-4 rounded-full hover:bg-surface-variant/40 active:scale-[0.98] transition-all border border-outline-variant/15"
+                  id="btn-criar-conta"
+                >
+                  Criar Nova Conta
                 </button>
               </RouterLink>
             </div>
@@ -142,6 +151,72 @@
     </footer>
   </div>
 </template>
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+// Importamos apenas as FUNÇÕES que vamos usar e o NOSSO auth pronto
+import { auth } from "@/services/firebase";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+
+const router = useRouter();
+
+// Estados Reativos
+const email = ref("");
+const password = ref("");
+const feedbackMsg = ref("");
+const isError = ref(true);
+const isLoading = ref(false);
+
+// Monitorar estado do usuário (Usando o auth centralizado)
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      router.push("/dashboard");
+    }
+  });
+});
+
+const handleLogin = async () => {
+  if (!email.value || !password.value) {
+    displayFeedback("Preencha todos os campos.");
+    return;
+  }
+
+  isLoading.value = true;
+  feedbackMsg.value = "";
+
+  try {
+    // Usamos o auth centralizado aqui também
+    await signInWithEmailAndPassword(auth, email.value, password.value);
+    displayFeedback("Bem-vindo! Redirecionando...", false);
+    router.push("/dashboard");
+  } catch (error) {
+    console.error(error.code);
+    isError.value = true;
+
+    switch (error.code) {
+      case "auth/invalid-credential":
+        displayFeedback("E-mail ou senha incorretos.");
+        break;
+      case "auth/invalid-email":
+        displayFeedback("E-mail inválido.");
+        break;
+      case "auth/too-many-requests":
+        displayFeedback("Muitas tentativas. Tente mais tarde.");
+        break;
+      default:
+        displayFeedback("Erro ao entrar: " + error.message);
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const displayFeedback = (msg, errorStatus = true) => {
+  feedbackMsg.value = msg;
+  isError.value = errorStatus;
+};
+</script>
 
 
 <style>

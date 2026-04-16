@@ -1,4 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/services/firebase.ts';
+
 import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/Auth/LoginView.vue';
 import RegisterView from '@/views/Auth/RegisterView.vue';
@@ -33,20 +37,53 @@ const router = createRouter({
     {
       path: '/dashboard',
       name: 'dashboard',
+      meta: { requiresAuth: true },
       component: Dashbord,
     },
     {
       path: '/friends',
       name: 'friends',
+      meta: { requiresAuth: true },
       component: FriendsView,
     },
     {
       path: '/settings',
       name: 'settings',
+      meta: { requiresAuth: true },
       component: settingsComponent,
     }
 
   ],
 })
+
+// Função auxiliar para checar o usuário atual de forma assíncrona
+const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    const removeListener = onAuthStateChanged(
+      auth,
+      (user) => {
+        removeListener();
+        resolve(user);
+      },
+      reject
+    );
+  });
+};
+// O "Guarda" das rotas
+router.beforeEach(async (to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const user = await getCurrentUser();
+
+  if (requiresAuth && !user) {
+    // Se a rota exige login e não tem usuário, manda pro login
+    next('/login');
+  } else if ((to.name === 'login' || to.name === 'register') && user) {
+    // Se o usuário já está logado e tenta ir pro login/registro, manda pro dashboard
+    next('/dashboard');
+  } else {
+    // Se estiver tudo ok, segue viagem
+    next();
+  }
+});
 
 export default router
