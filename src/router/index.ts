@@ -10,6 +10,7 @@ import ForgotPasswordView from '@/views/Auth/ForgotPasswordView.vue';
 import Dashbord from '@/views/Dashboard/HomeView.vue';
 import FriendsView from '@/views/Dashboard/FriendsView.vue';
 import settingsComponent from '@/components/layout/components/settingsComponent.vue';
+import EdtRole from '@/views/Dashboard/EdtRole.vue';
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -51,6 +52,12 @@ const router = createRouter({
       name: 'settings',
       meta: { requiresAuth: true },
       component: settingsComponent,
+    },
+    {
+      path: '/edit-role/:id',
+      name: 'edit-role',
+      meta: { requiresAuth: true },
+      component: EdtRole,
     }
 
   ],

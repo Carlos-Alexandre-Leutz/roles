@@ -44,6 +44,7 @@
     </nav>
     <div class="px-6 mt-auto">
       <button
+        @click="createNewRole()"
         class="w-full py-4 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-bold text-sm shadow-lg hover:brightness-110 active:scale-95 transition-all"
       >
         Criar Novo Rolê
@@ -58,20 +59,19 @@
         </a>
       </div>
     </div>
+    <ModalNewRole
+      v-if="showModalCreate"
+      @close-modal="showModalCreate = false"
+    ></ModalNewRole>
   </aside>
 </template>
-<script>
-import { useRoute } from "vue-router";
-import { computed } from "vue";
+<script setup>
+import { ref } from "vue";
+import ModalNewRole from "@/components/newRole/components/modalNewRole.vue";
 
-export default {
-  setup() {
-    const route = useRoute();
-    const currentRoute = computed(() => route.path);
+const showModalCreate = ref(false);
 
-    return {
-      currentRoute,
-    };
-  },
-};
+function createNewRole() {
+  showModalCreate.value = true;
+}
 </script>
