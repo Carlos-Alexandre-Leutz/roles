@@ -6,7 +6,9 @@ import {
   getDocs,
   query,
   where,
-  serverTimestamp
+  serverTimestamp,
+  doc,
+  getDoc
 } from "firebase/firestore";
 
 export const roleService = {
@@ -52,5 +54,23 @@ export const roleService = {
       console.error("Erro ao buscar roles por participantes:", e);
       throw e;
     }
-  }
+  },
+
+  async canEditRole(roleId: string) {
+    try {
+      const user = await authGuard.ensureAuth();
+      const roleRef = doc(db, "roles", roleId);
+      const roleSnap = await getDoc(roleRef);
+
+      if (!roleSnap.exists()) {
+        throw new Error("Role não encontrado");
+      }
+
+      const roleData = roleSnap.data();
+
+      return roleData.ownerId === user.uid;
+    } catch (e) {
+      return false;
+    }
+  },
 };

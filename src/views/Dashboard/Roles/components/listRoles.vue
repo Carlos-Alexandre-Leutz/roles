@@ -40,15 +40,24 @@
                 {{ role.title }}
               </h3>
               <div class="flex gap-3">
-                <button
-                  class="flex-1 py-3 rounded-full bg-surface-container-highest text-on-surface font-semibold text-sm hover:bg-surface-bright transition-colors active:scale-95 transition-transform"
+                <router-link
+                  :to="{
+                    name: 'view-role',
+                    params: { id: role.id },
+                  }"
                 >
-                  Ver Detalhes
-                </button>
+                  <button
+                    class="flex-1 py-3 rounded-full bg-surface-container-highest text-on-surface font-semibold text-sm hover:bg-surface-bright transition-colors active:scale-95 transition-transform"
+                  >
+                    Ver Detalhes
+                  </button>
+                </router-link>
 
                 <router-link
-                  :to="{ name: 'edit-role', params: { id: role.id } }"
-                  class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all"
+                  :to="{
+                    name: 'edit-role',
+                    params: { id: role.id },
+                  }"
                 >
                   <button
                     class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors active:scale-95 transition-transform"
@@ -76,9 +85,6 @@ async function fetchUserRoles() {
     isLoading.value = true;
     const data = await roleService.getMyRoles();
     myRoles.value = data;
-    console.log("Roles carregados:", myRoles.value);
-  } catch (error) {
-    console.error("Erro ao carregar a lista:", error);
   } finally {
     isLoading.value = false;
   }

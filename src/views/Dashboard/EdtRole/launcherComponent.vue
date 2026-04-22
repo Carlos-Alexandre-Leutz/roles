@@ -1,9 +1,7 @@
 <template>
   <div class="font-body selection:bg-primary/30">
-    <!-- Main Content Canvas -->
     <main class="min-h-screen bg-surface">
       <div class="max-w-[1400px] mx-auto p-8 lg:p-12">
-        <!-- Hero Section -->
         <section class="mb-12 relative rounded-[2.5rem] overflow-hidden group">
           <div
             class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent z-10"
@@ -53,24 +51,32 @@
                 <span class="material-symbols-outlined">share</span>
                 Convidar
               </button>
-              <button
-                class="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-container rounded-full font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-all"
-              >
-                <span class="material-symbols-outlined">edit</span>
-                Editar Evento
-              </button>
+              <template v-if="isViewOnly">
+                <router-link
+                  :to="{
+                    name: 'edit-role',
+                    params: { id: roleId },
+                  }"
+                >
+                  <button
+                    class="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-container rounded-full font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                  >
+                    <span class="material-symbols-outlined">edit</span>
+                    Editar Evento
+                  </button>
+                </router-link>
+              </template>
             </div>
           </div>
         </section>
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <!-- Left Column: Guests and Tasks -->
           <div class="lg:col-span-8 space-y-8">
-            <!-- componente de lista de convidados -->
-            <guestList></guestList>
-            <!-- Checklist / Expenses Bento Card -->
+            <guestList
+              :is-view-only="isViewOnly"
+              :is-editing="isEditing"
+            ></guestList>
             <checklistExpenses></checklistExpenses>
           </div>
-          <!-- Right Column: Chat -->
           <div class="lg:col-span-4 h-full sticky top-28">
             <eventChat></eventChat>
           </div>
@@ -114,9 +120,24 @@
 </template>
 
 <script setup>
+import { useRoute } from "vue-router";
+import { computed } from "vue";
+
 import guestList from "./components/guestList.vue";
 import checklistExpenses from "./components/checklistExpenses.vue";
 import eventChat from "./components/eventChat.vue";
+
+const props = defineProps({
+  mode: {
+    type: String,
+    default: "edit",
+  },
+});
+const route = useRoute();
+
+const roleId = route.params.id;
+const isViewOnly = computed(() => props.mode === "view");
+const isEditing = computed(() => props.mode === "edit");
 </script>
 
 <style>

@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/services/firebase.ts';
+import { roleService } from '@/services/roles/roleService.ts'
 
 import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/Auth/LoginView.vue';
@@ -59,6 +60,24 @@ const router = createRouter({
       name: 'edit-role',
       meta: { requiresAuth: true },
       component: EdtRole,
+      props: { mode: 'edit' },
+      beforeEnter: async (to, from, next) => {
+        const roleId = to.params.id;
+        const isOwner = await roleService.canEditRole(roleId);
+
+        if (isOwner) {
+          next();
+        } else {
+          next({ name: 'view-role', params: { id: roleId } });
+        }
+      }
+    },
+    {
+      path: '/view-role/:id',
+      name: 'view-role',
+      meta: { requiresAuth: true },
+      component: EdtRole,
+      props: { mode: 'view' }
     },
     {
       path: '/search-friends',

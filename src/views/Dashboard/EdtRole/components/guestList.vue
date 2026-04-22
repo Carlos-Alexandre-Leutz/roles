@@ -98,3 +98,15 @@
     </div>
   </div>
 </template>
+<script setup>
+const props = defineProps({
+  isViewOnly: {
+    type: Boolean,
+    default: false,
+  },
+  isEditing: {
+    type: Boolean,
+    default: false,
+  },
+});
+</script>
