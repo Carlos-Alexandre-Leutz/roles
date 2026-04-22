@@ -17,9 +17,9 @@
         <div>
           <span
             class="block text-on-surface font-headline font-bold text-lg tracking-tight"
-            >João Silva</span
           >
-          <span class="text-xs text-on-surface-variant">São Paulo, SP</span>
+            {{ formatName(userName) || "Carregando..." }}
+          </span>
         </div>
       </div>
       <div class="flex items-center gap-6">
@@ -42,11 +42,29 @@
   </main>
 </template>
 <script setup>
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { signOut } from "firebase/auth";
-import { auth } from "@/services/firebase"; // Importando o auth centralizado
+import { auth } from "@/services/firebase";
+import { userService } from "@/services/users/userService";
 
 const router = useRouter();
+const userName = ref("");
+
+const loadUserData = async () => {
+  try {
+    const user = await userService.getUser();
+    if (user) {
+      userName.value = user.displayName;
+    }
+  } catch (error) {
+    console.error("Erro ao carregar usuário no Header:", error);
+  }
+};
+
+onMounted(() => {
+  loadUserData();
+});
 
 const handleLogout = async () => {
   try {
@@ -55,5 +73,8 @@ const handleLogout = async () => {
   } catch (error) {
     console.error("Erro ao deslogar:", error);
   }
+};
+const formatName = (fullName) => {
+  return userService.formatName(fullName);
 };
 </script>

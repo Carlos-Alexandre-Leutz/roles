@@ -222,10 +222,10 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { auth } from "@/services/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { userService } from "@/services/users/userService.ts";
 
 const router = useRouter();
 
-// Estados Reativos
 const fullName = ref("");
 const email = ref("");
 const password = ref("");
@@ -236,9 +236,6 @@ const isLoading = ref(false);
 const showPassword = ref(false);
 
 const handleRegister = async () => {
-  console.log("asd");
-
-  // 1. Validações básicas
   if (!fullName.value || !email.value || !password.value) {
     displayFeedback("Por favor, preencha todos os campos.");
     return;
@@ -258,21 +255,18 @@ const handleRegister = async () => {
   feedbackMsg.value = "";
 
   try {
-    // 2. Criar usuário no Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email.value,
       password.value
     );
 
-    // 3. Adicionar o Nome ao perfil do usuário (opcional, mas recomendado)
     await updateProfile(userCredential.user, {
       displayName: fullName.value,
     });
-
+    await userService.saveUserProfile();
     displayFeedback("Conta criada com sucesso! Redirecionando...", false);
 
-    // 4. Redirecionar
     setTimeout(() => {
       router.push("/dashboard");
     }, 1500);

@@ -130,44 +130,22 @@
         <!-- Footer area inside focus -->
       </div>
     </main>
-    <footer
-      class="w-full absolute bottom-8 flex flex-col items-center justify-center gap-2 z-10"
-    >
-      <p class="text-xs font-['Manrope'] tracking-wide text-zinc-600">
-        © 2024 Neon Nocturne.
-      </p>
-      <div class="flex gap-4">
-        <a
-          class="text-xs font-['Manrope'] tracking-wide text-zinc-600 hover:text-purple-400 transition-opacity"
-          href="#"
-          >Termos</a
-        >
-        <a
-          class="text-xs font-['Manrope'] tracking-wide text-zinc-600 hover:text-purple-400 transition-opacity"
-          href="#"
-          >Privacidade</a
-        >
-      </div>
-    </footer>
   </div>
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-// Importamos apenas as FUNÇÕES que vamos usar e o NOSSO auth pronto
 import { auth } from "@/services/firebase";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 const router = useRouter();
 
-// Estados Reativos
 const email = ref("");
 const password = ref("");
 const feedbackMsg = ref("");
 const isError = ref(true);
 const isLoading = ref(false);
 
-// Monitorar estado do usuário (Usando o auth centralizado)
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -186,7 +164,6 @@ const handleLogin = async () => {
   feedbackMsg.value = "";
 
   try {
-    // Usamos o auth centralizado aqui também
     await signInWithEmailAndPassword(auth, email.value, password.value);
     displayFeedback("Bem-vindo! Redirecionando...", false);
     router.push("/dashboard");

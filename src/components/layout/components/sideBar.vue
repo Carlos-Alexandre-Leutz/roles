@@ -59,15 +59,15 @@
         </a>
       </div>
     </div>
-    <ModalNewRole
+    <modalNewRole
       v-if="showModalCreate"
       @close-modal="showModalCreate = false"
-    ></ModalNewRole>
+    ></modalNewRole>
   </aside>
 </template>
 <script setup>
 import { ref } from "vue";
-import ModalNewRole from "@/components/newRole/components/modalNewRole.vue";
+import modalNewRole from "@/components/modalNewRole/launcherComponent.vue";
 
 const showModalCreate = ref(false);
 

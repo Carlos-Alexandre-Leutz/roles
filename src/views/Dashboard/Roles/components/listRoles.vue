@@ -1,6 +1,6 @@
 <template>
-  <div class="body bg-surface text-on-surface">
-    <main class="min-h-screen flex flex-col">
+  <div class="bg-surface text-on-surface">
+    <main class="flex flex-col">
       <section class="w-full max-w-5xl items-center justify-center">
         <template v-for="role in myRoles" :key="role.id">
           <div
@@ -66,7 +66,7 @@
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
-import { roleService } from "../../../services/roles/roleService.js";
+import { roleService } from "../../../../services/roles/roleService.ts";
 
 const myRoles = ref([]);
 const isLoading = ref(true);
@@ -106,9 +106,6 @@ onMounted(() => {
 
 
 <style>
-.body {
-  font-family: "Manrope", sans-serif;
-}
 .font-headline {
   font-family: "Plus Jakarta Sans", sans-serif;
 }

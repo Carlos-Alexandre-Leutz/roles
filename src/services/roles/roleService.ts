@@ -10,15 +10,19 @@ import {
 } from "firebase/firestore";
 
 export const roleService = {
-  async createRole(roleData: any) {
+  async createRole(roleData: any, friendsIds: string[] = []) {
     try {
       const user = await authGuard.ensureAuth();
+      const allParticipants = [user.uid, ...friendsIds];
+
       const docRef = await addDoc(collection(db, "roles"), {
         title: roleData.title,
         description: roleData.description,
-        userId: user.uid,
+        ownerId: user.uid,
+        participants: allParticipants,
         createdAt: serverTimestamp()
       });
+
       return docRef.id;
     } catch (e) {
       console.error("Erro ao salvar role:", e);
@@ -28,18 +32,24 @@ export const roleService = {
 
   async getMyRoles() {
     try {
-     const user = await authGuard.ensureAuth();
+      const user = await authGuard.ensureAuth();
+      const myId = user.uid;
 
-      const q = query(collection(db, "roles"), where("userId", "==", user.uid));
+      const q = query(
+        collection(db, "roles"),
+        where("participants", "array-contains", myId)
+      );
+
       const querySnapshot = await getDocs(q);
+
+      console.log(`✅ Roles encontrados onde você participa: ${querySnapshot.size}`);
 
       return querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
     } catch (e) {
-      console.error("Erro ao buscar roles:", e);
-      //jerar um log detalhado para o erro em uma tela para mim olhar se ta dando erro ou não
+      console.error("Erro ao buscar roles por participantes:", e);
       throw e;
     }
   }
