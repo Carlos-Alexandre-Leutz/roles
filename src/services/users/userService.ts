@@ -81,6 +81,24 @@ export const userService = {
       return "Erro ao carregar nome";
     }
   },
+  async getUsersByIds(uids: string[]) {
+    if (!uids || uids.length === 0) return [];
+
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("uid", "in", uids));
+      const querySnapshot = await getDocs(q);
+
+      return querySnapshot.docs.map(doc => ({
+        uid: doc.id,
+        ...doc.data(),
+        name: doc.data().displayName || "Usuário"
+      }));
+    } catch (e) {
+      console.error("Erro ao buscar lote de usuários:", e);
+      return [];
+    }
+  },
   formatName(name: string) {
     if (!name) return '';
     return name

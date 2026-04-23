@@ -14,7 +14,6 @@ import {
 
 export const friendService = {
   async sendFriendRequest(toId: string) {
-    console.log(toId);
 
     const from = await authGuard.ensureAuth();
 
@@ -106,21 +105,30 @@ export const friendService = {
 
       const snap = await getDocs(q);
 
-      const friends = await Promise.all(
-        snap.docs.map(async (friendDoc) => {
-          const data = friendDoc.data();
-          const friendId = data.participants.find((id: string) => id !== myId);
+      if (snap.empty) return [];
 
-          const friendName = await userService.getName(friendId);
+      const friendshipsData = snap.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          friendId: data.participants.find((id: string) => id !== myId)
+        };
+      });
 
-          return {
-            id: friendDoc.id,
-            ...data,
-            friendId,
-            friendName,
-          };
-        })
-      );
+      const allFriendIds = friendshipsData.map(f => f.friendId);
+
+      const friendsProfiles = await userService.getUsersByIds(allFriendIds);
+
+      const friends = friendshipsData.map(friendship => {
+        const profile = friendsProfiles.find(p => p.uid === friendship.friendId);
+
+        return {
+          ...friendship,
+          friendName: profile?.displayName || "Usuário desconhecido",
+          friendPhoto: profile?.photoURL || null
+        };
+      });
 
       return friends;
 

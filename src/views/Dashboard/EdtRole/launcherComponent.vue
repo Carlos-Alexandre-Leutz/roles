@@ -46,12 +46,21 @@
             </div>
             <div class="flex gap-4">
               <button
-                class="flex items-center gap-2 px-8 py-4 bg-surface-container-highest/60 backdrop-blur-xl rounded-full font-bold border border-outline-variant/20 hover:bg-surface-container-highest transition-all"
+                @click="handleAccept"
+                class="flex items-center gap-2 px-8 py-4 bg-emerald-500/20 backdrop-blur-xl rounded-full font-bold border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-all"
               >
-                <span class="material-symbols-outlined">share</span>
-                Convidar
+                <span class="material-symbols-outlined text-emerald-400"
+                  >check_circle</span
+                >
+                Aceitar Convite
               </button>
               <template v-if="isViewOnly">
+                <button
+                  class="flex items-center gap-2 px-8 py-4 bg-surface-container-highest/60 backdrop-blur-xl rounded-full font-bold border border-outline-variant/20 hover:bg-surface-container-highest transition-all"
+                >
+                  <span class="material-symbols-outlined">share</span>
+                  Convidar
+                </button>
                 <router-link
                   :to="{
                     name: 'edit-role',
@@ -74,6 +83,7 @@
             <guestList
               :is-view-only="isViewOnly"
               :is-editing="isEditing"
+              :data="currentRole"
             ></guestList>
             <checklistExpenses></checklistExpenses>
           </div>
@@ -121,11 +131,13 @@
 
 <script setup>
 import { useRoute } from "vue-router";
-import { computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 
 import guestList from "./components/guestList.vue";
 import checklistExpenses from "./components/checklistExpenses.vue";
 import eventChat from "./components/eventChat.vue";
+
+import { roleService } from "@/services/roles/roleService.ts";
 
 const props = defineProps({
   mode: {
@@ -133,11 +145,37 @@ const props = defineProps({
     default: "edit",
   },
 });
+const emit = defineEmits(["refresh"]);
+
 const route = useRoute();
 
 const roleId = route.params.id;
 const isViewOnly = computed(() => props.mode === "view");
 const isEditing = computed(() => props.mode === "edit");
+
+const currentRole = ref(null);
+const loading = ref(true);
+
+async function loadRoleData() {
+  loading.value = true;
+  try {
+    const data = await roleService.getRoleById(roleId);
+    if (data) {
+      currentRole.value = data;
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function handleAccept() {
+  await roleService.respondToRole(roleId, "confirmed");
+  loadRoleData();
+}
+
+onMounted(() => {
+  loadRoleData();
+});
 </script>
 
 <style>

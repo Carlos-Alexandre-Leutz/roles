@@ -21,8 +21,9 @@
               >
                 <span
                   class="text-[10px] font-bold text-primary uppercase tracking-wider"
-                  >Confirmado</span
                 >
+                  {{ role.myStatus === "pending" ? "Pendente" : "Confirmado" }}
+                </span>
               </div>
             </div>
             <div class="p-8">
