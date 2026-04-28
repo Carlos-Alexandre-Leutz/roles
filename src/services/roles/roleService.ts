@@ -63,44 +63,44 @@ export const roleService = {
       console.error("Erro ao responder ao role:", e);
     }
   },
-async getMyRoles() {
-  try {
-    const user = await authGuard.ensureAuth();
-    const myId = user.uid;
+  async getMyRoles() {
+    try {
+      const user = await authGuard.ensureAuth();
+      const myId = user.uid;
 
-    const statuses = ['confirmed', 'pending', 'declined'];
+      const statuses = ['confirmed', 'pending', 'declined'];
 
-    const promises = statuses.map(status => {
-      const q = query(
-        collection(db, "roles"),
-        where("participants", "array-contains", { uid: myId, status: status })
-      );
-      return getDocs(q);
-    });
+      const promises = statuses.map(status => {
+        const q = query(
+          collection(db, "roles"),
+          where("participants", "array-contains", { uid: myId, status: status })
+        );
+        return getDocs(q);
+      });
 
-    const results = await Promise.all(promises);
-    const allDocs = results.flatMap(snapshot => snapshot.docs);
+      const results = await Promise.all(promises);
+      const allDocs = results.flatMap(snapshot => snapshot.docs);
 
-    const roles = allDocs.map(doc => {
-      const data = doc.data();
+      const roles = allDocs.map(doc => {
+        const data = doc.data();
 
-      const myParticipation = data.participants?.find((p: any) => p.uid === myId);
+        const myParticipation = data.participants?.find((p: any) => p.uid === myId);
 
-      return {
-        id: doc.id,
-        title: data.title,
-        ownerId: data.ownerId,
-        myStatus: myParticipation?.status || 'pending',
-      };
-    });
+        return {
+          id: doc.id,
+          title: data.title,
+          ownerId: data.ownerId,
+          myStatus: myParticipation?.status || 'pending',
+        };
+      });
 
-    return roles;
+      return roles;
 
-  } catch (e) {
-    console.error("Erro ao buscar roles:", e);
-    throw e;
-  }
-},
+    } catch (e) {
+      console.error("Erro ao buscar roles:", e);
+      throw e;
+    }
+  },
   async getRoleById(roleId: string) {
     try {
       const docRef = doc(db, "roles", roleId);

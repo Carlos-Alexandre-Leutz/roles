@@ -1,54 +1,50 @@
-# roles
+# Roles App 🚀
 
-This template should help get you started developing with Vue 3 in Vite.
+**Roles** is a modern social application designed to streamline group gatherings. Whether it's a band rehearsal, a soccer match, or a casual dinner, Roles allows users to create events, invite friends, and track attendance status in real-time.
 
-## Recommended IDE Setup
+## 🛠️ Tech Stack
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Frontend:** Vue 3 (Composition API & Script Setup)
+- **Styling:** Tailwind CSS (Material Design System)
+- **Backend-as-a-Service:** Firebase (Firestore, Auth, and Hosting)
+- **Build Tool:** Vite
 
-## Recommended Browser Setup
+**Roles** is a modern social application designed to streamline group gatherings.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## 🔗 Live Demo
+You can check the application running live here:
+👉 **[https://carlos-alexandre-leutz.github.io/roles/](https://carlos-alexandre-leutz.github.io/roles/)**
 
-## Type Support for `.vue` Imports in TS
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## ✨ Key Features
 
-## Customize configuration
+- **Real-time Attendance:** Track who is *Confirmed*, *Pending*, or *Declined*.
+- **Data Hydration:** Merges Firestore event data with user profiles (names/photos) for a rich UI experience.
+- **Smart Queries:** Optimized Firestore queries to fetch only the data you need.
+- **Responsive Design:** Premium look and feel on any device.
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 🚀 Automatic Deployment (CI/CD)
 
-## Project Setup
+This project uses **GitHub Actions** for Continuous Deployment. Every push to the `main` branch triggers an automated workflow:
 
-```sh
-npm install
-```
+1. **Checkout:** Pulls the latest code.
+2. **Build:** Installs dependencies (`npm install`) and builds the project (`npm run build`).
+3. **Deploy:** Automatically pushes the build to **Firebase Hosting**.
 
-### Compile and Hot-Reload for Development
+This ensures that the live application is always synced with the latest stable code in the repository.
 
-```sh
-npm run dev
-```
+## ⚙️ Getting Started
 
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+1. Clone the repository:
+   ```bash
+   git clone [https://github.com/your-username/roles.git](https://github.com/your-username/roles.git)
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Setup your `.env` with Firebase credentials.
+4. Run development server:
+   ```bash
+   npm run dev
+   ```
