@@ -1,6 +1,7 @@
 import { db } from "../firebase.ts";
 import { authGuard } from "../authGuard.ts";
 import { userService } from "@/services/users/userService.ts"
+import Swal from 'sweetalert2';
 import {
   collection,
   addDoc,
@@ -59,8 +60,39 @@ export const roleService = {
       });
 
       await updateDoc(roleRef, { participants: updatedParticipants });
+
+      if (status === 'confirmed') {
+        Swal.fire({
+          title: 'Presença Confirmada!',
+          text: 'Você agora faz parte deste Role.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          background: '#1e293b',
+          color: '#f8fafc'
+        });
+      } else {
+        Swal.fire({
+          title: 'Convite Recusado',
+          text: 'O evento não aparecerá mais na sua agenda.',
+          icon: 'info',
+          timer: 2000,
+          showConfirmButton: false,
+          background: '#1e293b',
+          color: '#f8fafc'
+        });
+      }
+      return true;
+
     } catch (e) {
       console.error("Erro ao responder ao role:", e);
+      Swal.fire({
+        title: 'Erro!',
+        text: 'Não foi possível salvar sua resposta.',
+        icon: 'error',
+        confirmButtonColor: '#3b82f6'
+      });
+      return false;
     }
   },
   async getMyRoles() {
@@ -148,6 +180,25 @@ export const roleService = {
       return roleData.ownerId === user.uid;
     } catch (e) {
       return false;
+    }
+  },
+  async getMyStatusInRole(roleId: string) {
+    try {
+      const user = await authGuard.ensureAuth();
+      const roleRef = doc(db, "roles", roleId);
+      const roleSnap = await getDoc(roleRef);
+
+      if (!roleSnap.exists()) return null;
+
+      const roleData = roleSnap.data();
+      const participants = roleData.participants || [];
+
+      const myParticipation = participants.find((p: any) => p.uid === user.uid);
+      return myParticipation ? myParticipation.status : null;
+
+    } catch (e) {
+      console.error("Erro ao buscar status no role:", e);
+      return null;
     }
   },
 };

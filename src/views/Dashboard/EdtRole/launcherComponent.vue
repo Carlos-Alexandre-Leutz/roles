@@ -45,16 +45,27 @@
               </div>
             </div>
             <div class="flex gap-4">
-              <button
-                @click="handleAccept"
-                class="flex items-center gap-2 px-8 py-4 bg-emerald-500/20 backdrop-blur-xl rounded-full font-bold border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-all"
-              >
-                <span class="material-symbols-outlined text-emerald-400"
-                  >check_circle</span
+              <template v-if="!isOwner">
+                <button
+                  @click="handleAccept"
+                  class="flex items-center gap-2 px-8 py-4 bg-emerald-500/20 backdrop-blur-xl rounded-full font-bold border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-all"
                 >
-                Aceitar Convite
-              </button>
-              <template v-if="isViewOnly">
+                  <span class="material-symbols-outlined text-emerald-400"
+                    >check_circle</span
+                  >
+                  {{ isConfirmed ? "Convite Aceito" : "Aceitar Convite" }}
+                </button>
+                <button
+                  @click="handleDeclined"
+                  class="flex items-center gap-2 px-8 py-4 bg-red-500/10 backdrop-blur-xl rounded-full font-bold border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all"
+                >
+                  <span class="material-symbols-outlined text-red-400">
+                    cancel
+                  </span>
+                  {{ isDeclined ? "Convite Recusado" : "Recusar Convite" }}
+                </button>
+              </template>
+              <template v-if="isOwner">
                 <button
                   class="flex items-center gap-2 px-8 py-4 bg-surface-container-highest/60 backdrop-blur-xl rounded-full font-bold border border-outline-variant/20 hover:bg-surface-container-highest transition-all"
                 >
@@ -131,7 +142,7 @@
 
 <script setup>
 import { useRoute } from "vue-router";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, defineEmits, defineProps } from "vue";
 
 import guestList from "./components/guestList.vue";
 import checklistExpenses from "./components/checklistExpenses.vue";
@@ -144,6 +155,14 @@ const props = defineProps({
     type: String,
     default: "edit",
   },
+  isOwner: {
+    type: Boolean,
+    default: false,
+  },
+  status: {
+    type: String,
+    default: "pending",
+  },
 });
 const emit = defineEmits(["refresh"]);
 
@@ -152,6 +171,10 @@ const route = useRoute();
 const roleId = route.params.id;
 const isViewOnly = computed(() => props.mode === "view");
 const isEditing = computed(() => props.mode === "edit");
+
+const isPending = computed(() => props.status === "pending");
+const isConfirmed = computed(() => props.status === "confirmed");
+const isDeclined = computed(() => props.status === "declined");
 
 const currentRole = ref(null);
 const loading = ref(true);
@@ -169,8 +192,22 @@ async function loadRoleData() {
 }
 
 async function handleAccept() {
-  await roleService.respondToRole(roleId, "confirmed");
-  loadRoleData();
+  if (props.status === "confirmed") return;
+
+  const success = await roleService.respondToRole(roleId, "confirmed");
+  if (success) {
+    localStatus.value = "confirmed";
+    loadRoleData();
+  }
+}
+async function handleDeclined() {
+  if (props.status === "declined") return;
+
+  const success = await roleService.respondToRole(roleId, "declined");
+  if (success) {
+    localStatus.value = "declined";
+    loadRoleData();
+  }
 }
 
 onMounted(() => {

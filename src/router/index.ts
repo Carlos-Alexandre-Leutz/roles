@@ -60,14 +60,20 @@ const router = createRouter({
       name: 'edit-role',
       meta: { requiresAuth: true },
       component: EdtRole,
-      props: { mode: 'edit' },
+      props: route => ({
+        mode: 'edit',
+        isOwner: route.meta.isOwner,
+        status: route.meta.status,
+      }),
       beforeEnter: async (to, from, next) => {
         const roleId = to.params.id;
         const isOwner = await roleService.canEditRole(roleId);
-
         if (isOwner) {
+          to.meta.isOwner = true;
           next();
         } else {
+          const status = await roleService.getMyStatusInRole(roleId);
+          to.meta.status = status;
           next({ name: 'view-role', params: { id: roleId } });
         }
       }
@@ -77,7 +83,20 @@ const router = createRouter({
       name: 'view-role',
       meta: { requiresAuth: true },
       component: EdtRole,
-      props: { mode: 'view' }
+      props: route => ({
+        mode: 'view',
+        isOwner: route.meta.isOwner,
+        status: route.meta.status,
+      }),
+      beforeEnter: async (to, from, next) => {
+        const roleId = to.params.id;
+        const isOwner = await roleService.canEditRole(roleId);
+        const status = await roleService.getMyStatusInRole(roleId);
+
+        to.meta.isOwner = isOwner;
+        to.meta.status = status;
+        next();
+      }
     },
     {
       path: '/search-friends',

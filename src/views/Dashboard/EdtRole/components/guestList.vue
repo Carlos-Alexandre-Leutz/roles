@@ -6,7 +6,7 @@
           Lista de Convidados
         </h3>
         <p class="text-on-surface-variant text-sm mt-1">
-          24 pessoas confirmadas até agora
+          {{ confirmedCount }} pessoas confirmadas até agora
         </p>
       </div>
       <button class="text-primary font-bold text-sm hover:underline">
@@ -58,6 +58,7 @@
   </div>
 </template>
 <script setup>
+import { computed } from "vue";
 const props = defineProps({
   isViewOnly: {
     type: Boolean,
@@ -73,5 +74,9 @@ const props = defineProps({
       return {};
     },
   },
+});
+const confirmedCount = computed(() => {
+  return props.data?.participants.filter((p) => p.status === "confirmed")
+    .length;
 });
 </script>
