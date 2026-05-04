@@ -172,9 +172,8 @@ const roleId = route.params.id;
 const isViewOnly = computed(() => props.mode === "view");
 const isEditing = computed(() => props.mode === "edit");
 
-const isPending = computed(() => props.status === "pending");
-const isConfirmed = computed(() => props.status === "confirmed");
-const isDeclined = computed(() => props.status === "declined");
+const isConfirmed = ref(props.status === "confirmed");
+const isDeclined = ref(props.status === "declined");
 
 const currentRole = ref(null);
 const loading = ref(true);
@@ -196,7 +195,8 @@ async function handleAccept() {
 
   const success = await roleService.respondToRole(roleId, "confirmed");
   if (success) {
-    localStatus.value = "confirmed";
+    isConfirmed.value = true;
+    isDeclined.value = false;
     loadRoleData();
   }
 }
@@ -205,7 +205,8 @@ async function handleDeclined() {
 
   const success = await roleService.respondToRole(roleId, "declined");
   if (success) {
-    localStatus.value = "declined";
+    isDeclined.value = true;
+    isConfirmed.value = false;
     loadRoleData();
   }
 }
