@@ -1,82 +1,78 @@
 <template>
   <div class="bg-surface text-on-surface">
-    <main class="flex flex-col">
-      <section class="w-full max-w-5xl items-center justify-center">
-        <template v-for="role in myRoles" :key="role.id">
-          <div
-            class="group relative bg-surface-container-low rounded-[2rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 w-full max-w-md"
-          >
-            <div class="h-48 overflow-hidden relative">
-              <img
-                alt="Churrasco no Prédio"
-                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                data-alt="overhead view of a vibrant rooftop barbecue party at dusk with strings of warm fairy lights and smoke rising"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCo4qBJ1nLGH8YjJ-Hka5EDoITmH0zthmtxl2CKOzR6-HH9bjU46sOmetBcgAgqXX3FISzRw6bXZP54sEDhbM3cWNvPkTeOrQ4_odjQe1JuVZYkL4oO7dHSQ-faUaH60_VC7Y5ZWfs3BlhSuL6PxBJPodXGepJigHjkwX4pCVJtm3vy6PGKnVh4V1NfzQKJ0UK_If40G86SBVRfaxZ-bElApeDitV09G3rQ9V9xYlO_kP1ETsyRCMDRGqYXhcQ-PCJCtxsbjkZWJQCf"
-              />
-              <div
-                class="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent"
-              ></div>
-              <div
-                class="absolute top-4 right-4 bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full border border-primary/30"
+    <div class="space-y-4">
+      <template v-for="role in myRoles" :key="role.id">
+        <div
+          class="group flex flex-col md:flex-row items-center bg-surface-container-low p-6 rounded-2xl hover:bg-surface-container transition-all duration-300 border border-outline-variant/10 hover:border-primary/20"
+        >
+          <div class="flex-1 flex items-center gap-6 w-full">
+            <div class="flex flex-col items-start min-w-[120px]">
+              <span
+                class="text-xs font-bold uppercase tracking-widest text-primary"
+                >{{ formatDate(role.eventDateTime) }}</span
               >
-                <span
-                  class="text-[10px] font-bold text-primary uppercase tracking-wider"
-                >
-                  {{ role.myStatus === "pending" ? "Pendente" : "Confirmado" }}
-                </span>
-              </div>
             </div>
-            <div class="p-8">
-              <div class="flex items-center gap-2 text-primary mb-3">
-                <span class="material-symbols-outlined text-sm"
-                  >calendar_today</span
-                >
-                <span class="text-xs font-bold uppercase tracking-widest">
-                  {{ formatDate(role.createdAt) }}</span
-                >
-              </div>
-              <h3
-                class="text-2xl font-bold font-headline text-on-surface mb-6 leading-tight"
+            <h3 class="text-xl font-bold font-headline text-on-surface">
+              {{ role.title }}
+            </h3>
+          </div>
+          <div class="flex items-center gap-8 w-full md:w-auto mt-6 md:mt-0">
+            <span
+              class="text-on-surface-variant text-[10px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-full border border-outline-variant/30"
+              :class="
+                role.myStatus ? 'bg-primary/20' : 'bg-surface-container-highest'
+              "
+            >
+              {{ role.myStatus === "pending" ? "Pendente" : "Confirmado" }}
+            </span>
+            <div class="flex items-center gap-3">
+              <router-link
+                :to="{
+                  name: 'view-role',
+                  params: { id: role.id },
+                }"
               >
-                {{ role.title }}
-              </h3>
-              <div class="flex gap-3">
-                <router-link
-                  :to="{
-                    name: 'view-role',
-                    params: { id: role.id },
-                  }"
+                <button
+                  class="px-6 py-2.5 rounded-full border border-outline-variant text-on-surface text-sm font-semibold hover:bg-surface-bright transition-colors"
                 >
-                  <button
-                    class="flex-1 py-3 rounded-full bg-surface-container-highest text-on-surface font-semibold text-sm hover:bg-surface-bright transition-colors active:scale-95 transition-transform"
-                  >
-                    Ver Detalhes
-                  </button>
-                </router-link>
-
-                <router-link
-                  :to="{
-                    name: 'edit-role',
-                    params: { id: role.id },
-                  }"
+                  Ver Detalhes
+                </button>
+              </router-link>
+              <router-link
+                :to="{
+                  name: 'edit-role',
+                  params: { id: role.id },
+                }"
+              >
+                <button
+                  v-if="userId == role.ownerId"
+                  class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors"
                 >
-                  <button
-                    class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors active:scale-95 transition-transform"
-                  >
-                    <span class="material-symbols-outlined">edit</span>
-                  </button>
-                </router-link>
-              </div>
+                  <span class="material-symbols-outlined text-xl">edit</span>
+                </button>
+              </router-link>
+              <button
+                v-if="userId == role.ownerId"
+                @click.stop="confirmDelete(role)"
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface-variant hover:text-error transition-colors"
+              >
+                <span class="material-symbols-outlined text-xl">delete</span>
+              </button>
             </div>
           </div>
-        </template>
-      </section>
-    </main>
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { roleService } from "../../../../services/roles/roleService.ts";
+import { useStore } from "vuex";
+import Swal from "sweetalert2";
+
+const store = useStore();
+const userId = computed(() => store.getters.userId);
 
 const myRoles = ref([]);
 const isLoading = ref(true);
@@ -91,28 +87,79 @@ async function fetchUserRoles() {
   }
 }
 
-function formatDate(timestamp) {
-  if (!timestamp) return "Data pendente...";
+const confirmDelete = async (role) => {
+  const result = await Swal.fire({
+    title: "Deletar Role?",
+    text: `Isso apagará "${role.title}" para todos os participantes. Não há como desfazer!`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ff5252",
+    cancelButtonColor: "#303030",
+    confirmButtonText: "Sim, deletar!",
+    cancelButtonText: "Cancelar",
+    background: "#1e1e1e",
+    color: "#ffffff",
+  });
 
-  if (timestamp.seconds) {
-    const data = new Date(timestamp.seconds * 1000);
-    return data.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+  if (result.isConfirmed) {
+    try {
+      Swal.fire({
+        title: "Deletando...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      await roleService.deleteRole(role.id);
+
+      Swal.fire({
+        title: "Deletado!",
+        text: "O evento foi removido com sucesso.",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      fetchUserRoles();
+    } catch (e) {
+      Swal.fire("Erro!", "Não foi possível deletar o evento.", "error");
+    }
   }
+};
 
-  return "Data inválida";
-}
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+
+  const day = date.getDate();
+  const month = date
+    .toLocaleString("pt-BR", { month: "short" })
+    .replace(".", "");
+
+  const monthCapitalized = month.charAt(0).toUpperCase() + month.slice(1);
+
+  const time = date.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${day} ${monthCapitalized} • ${time}`;
+};
+
+defineExpose({
+  fetchUserRoles,
+});
 
 onMounted(() => {
   fetchUserRoles();
 });
 </script>
-
-
 <style>
+body {
+  font-family: "Manrope", sans-serif;
+}
 .font-headline {
   font-family: "Plus Jakarta Sans", sans-serif;
 }
@@ -124,11 +171,9 @@ onMounted(() => {
 .neon-glow {
   box-shadow: 0 0 40px -10px rgba(219, 144, 255, 0.15);
 }
-/* remover */
 .atmospheric-glow {
   box-shadow: 0 0 64px rgba(219, 144, 255, 0.08);
 }
-/* remover */
 .no-border {
   border: none !important;
 }

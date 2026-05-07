@@ -11,37 +11,35 @@
               alt="Brazilian BBQ"
               class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-1000"
               data-alt="juicy pieces of seasoned meat grilling on a charcoal barbecue with glowing embers and soft smoke in a festive night setting"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMRLsKkzsGozROokdpNZHaMm7GqcTuJuP7I4K28djalwuNaHJhvWZhLYMQoTLTZ0tdeGX_WerTJWBpOq-3Sm8qczUg48wUnzLxL-UPAuAu-jjiq0oakhurWNniQvefDa6N618wyMFwZ5wFzPe4XyAu9BP_FuXgskZ7vPO1K118fA2C49d-4OCNhiLeScIMMjv0UjYhwkv2U28CJ-HzbS9cPBulAwFRG-QisAAFCGlwyeCgODbLz1AMHUudL_HOP61ICGK2IqgvEdV0"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc8yq26Evu21Te1JWJhNvPcZ9rNiW8WFbm1AqbrjgWYA8vZhgH2uiuDQPRrxIEPZ4Be3Zo87LnoPC_Wzlz_PkDdPTUnDQ1Km00HtWiMLzgGBEglw0JqZVfu_lRsYN-F6uw629xsC8yYNhmcmd-Yd6kL-wLu6MxNoVVv8rPZwAePDvXn0nTz6nffAXgdkQqL9WCUm1ouqXvxt-nmAzZ_08dINnJu_4mypv2PbXx6QxhFxLm-KOzfChdJKFUNGHRmUfCyY6J64cV1OVB"
             />
           </div>
           <div
             class="absolute bottom-0 left-0 p-10 z-20 w-full flex flex-col md:flex-row md:items-end justify-between gap-6"
           >
             <div>
-              <div class="flex items-center gap-3 mb-4">
-                <span
-                  class="bg-primary/20 backdrop-blur-md text-primary px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase border border-primary/20"
-                  >Confirmado</span
-                >
-                <span
-                  class="text-on-surface-variant text-sm flex items-center gap-2"
-                >
-                  <span class="material-symbols-outlined text-base"
-                    >calendar_today</span
-                  >
-                  15 OUT, 2023 • 14:00
-                </span>
-              </div>
               <h2
                 class="text-5xl lg:text-7xl font-headline font-black tracking-tighter text-white mb-2"
               >
-                Churrasco no Prédio
+                {{ currentRole?.title || "Carregando..." }}
               </h2>
+              <div class="flex items-center gap-3 mb-4">
+                <span
+                  class="bg-primary/20 backdrop-blur-md text-primary px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase border border-primary/20"
+                >
+                  <span class="material-symbols-outlined text-base">
+                    calendar_today
+                    {{ formatEventDate(currentRole?.eventDateTime) }}
+                  </span>
+                </span>
+              </div>
               <div class="flex items-center gap-2 text-on-surface-variant">
                 <span class="material-symbols-outlined text-primary"
                   >location_on</span
                 >
-                <span class="text-lg">Rua das Flores, 123 - São Paulo, SP</span>
+                <span class="text-lg first-letter:uppercase lowercase">
+                  {{ currentRole?.address }}
+                </span>
               </div>
             </div>
             <div class="flex gap-4">
@@ -96,7 +94,11 @@
               :is-editing="isEditing"
               :data="currentRole"
             ></guestList>
-            <checklistExpenses></checklistExpenses>
+            <checklistExpenses
+              :role-id="roleId"
+              :data="currentRole"
+              @open-modal="showModalChecklistExpenses = true"
+            ></checklistExpenses>
           </div>
           <div class="lg:col-span-4 h-full sticky top-28">
             <eventChat></eventChat>
@@ -104,7 +106,14 @@
         </div>
       </div>
     </main>
-    <!-- Bottom Navigation for Mobile -->
+    <modalChecklistExpenses
+      v-if="showModalChecklistExpenses"
+      :role-id="roleId"
+      :participants="currentRole.participants"
+      @close="showModalChecklistExpenses = false"
+      @refresh="loadRoleData()"
+    />
+    <!-- Bottom Navigation for Mobile -->''
     <nav
       class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0e0e0e]/95 backdrop-blur-2xl border-t border-outline-variant/10 flex justify-around items-center h-20 px-4 z-50"
     >
@@ -147,6 +156,7 @@ import { ref, computed, onMounted, defineEmits, defineProps } from "vue";
 import guestList from "./components/guestList.vue";
 import checklistExpenses from "./components/checklistExpenses.vue";
 import eventChat from "./components/eventChat.vue";
+import modalChecklistExpenses from "./components/modalChecklistExpenses.vue";
 
 import { roleService } from "@/services/roles/roleService.ts";
 
@@ -167,6 +177,8 @@ const props = defineProps({
 const emit = defineEmits(["refresh"]);
 
 const route = useRoute();
+
+const showModalChecklistExpenses = ref(false);
 
 const roleId = route.params.id;
 const isViewOnly = computed(() => props.mode === "view");
@@ -210,6 +222,22 @@ async function handleDeclined() {
     loadRoleData();
   }
 }
+
+const formatEventDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+
+  const day = date.getDate();
+  const month = date
+    .toLocaleString("pt-BR", { month: "short" })
+    .replace(".", "");
+  const time = date.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${day} ${month.toUpperCase()} • ${time}`;
+};
 
 onMounted(() => {
   loadRoleData();

@@ -1,5 +1,6 @@
 import { db } from '../firebase';
 import { authGuard } from '../authGuard.ts';
+import store from "@/store";
 import {
   doc,
   setDoc,
@@ -14,7 +15,11 @@ import {
 
 export const userService = {
   async getUser() {
-    return await authGuard.ensureAuth();
+    const user = await authGuard.ensureAuth();
+    if (user) {
+      store.commit('SET_USER_ID', user.uid);
+    }
+    return user;
   },
   async saveUserProfile() {
     const user = await authGuard.ensureAuth();

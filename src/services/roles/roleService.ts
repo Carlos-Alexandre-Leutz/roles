@@ -11,7 +11,9 @@ import {
   serverTimestamp,
   doc,
   getDoc,
-  updateDoc
+  updateDoc,
+  arrayUnion,
+  deleteDoc
 } from "firebase/firestore";
 
 export const roleService = {
@@ -32,6 +34,8 @@ export const roleService = {
       const docRef = await addDoc(collection(db, "roles"), {
         title: roleData.title,
         ownerId: user.uid,
+        address: roleData.address,
+        eventDateTime: roleData.eventDateTime,
         participants: participants,
         createdAt: serverTimestamp()
       });
@@ -123,6 +127,7 @@ export const roleService = {
           title: data.title,
           ownerId: data.ownerId,
           myStatus: myParticipation?.status || 'pending',
+          eventDateTime: data.eventDateTime,
         };
       });
 
@@ -201,4 +206,86 @@ export const roleService = {
       return null;
     }
   },
+  async addItemToRole(roleId: number, itemData: any) {
+    try {
+      const roleRef = doc(db, "roles", roleId);
+
+      const newItem = {
+        id: Date.now(),
+        name: itemData.name,
+        price: parseFloat(itemData.price),
+        responsibleId: itemData.responsibleId,
+        responsibleName: itemData.responsibleName,
+        isDone: false,
+        createdAt: new Date().toISOString()
+      };
+
+      await updateDoc(roleRef, {
+        items: arrayUnion(newItem)
+      });
+
+      return true;
+    } catch (e) {
+      console.error("Erro ao adicionar item:", e);
+      return false;
+    }
+  },
+  async toggleItemStatus(roleId: string, itemId: number, isDone: boolean) {
+
+    try {
+      const roleRef = doc(db, "roles", roleId);
+      const roleSnap = await getDoc(roleRef);
+
+      if (!roleSnap.exists()) {
+        throw new Error("Role não encontrado");
+      }
+
+      const data = roleSnap.data();
+      const items = Array.isArray(data.items) ? data.items : [];
+
+      const updatedItems = items.map((item: any) => {
+        if (item.id === itemId) {
+          return { ...item, isDone: isDone };
+        }
+        return item;
+      });
+
+      await updateDoc(roleRef, {
+        items: updatedItems
+      });
+
+      return true;
+    } catch (e) {
+      console.error("Erro ao atualizar status do item:", e);
+      return false;
+    }
+  },
+  async deleteItemFromRole(roleId: string, itemId: number) {
+    try {
+      const roleRef = doc(db, "roles", roleId);
+      const roleSnap = await getDoc(roleRef);
+
+      if (!roleSnap.exists()) return false;
+
+      const items = roleSnap.data().items || [];
+
+      const updatedItems = items.filter((item: any) => item.id !== itemId);
+
+      await updateDoc(roleRef, { items: updatedItems });
+      return true;
+    } catch (e) {
+      console.error("Erro ao deletar item:", e);
+      return false;
+    }
+  },
+  async deleteRole(roleId: string) {
+    try {
+      const roleRef = doc(db, "roles", roleId);
+      await deleteDoc(roleRef);
+      return true;
+    } catch (e) {
+      console.error("Erro ao deletar role:", e);
+      throw e;
+    }
+  }
 };

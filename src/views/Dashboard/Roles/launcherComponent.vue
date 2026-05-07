@@ -24,28 +24,23 @@
         </div>
       </div>
     </div>
-    <listRoles></listRoles>
-    <div
-      @click="createNewRole()"
-      class="group relative min-h-[300px] bg-surface-container-low rounded-[2rem] border-2 border-dashed border-outline-variant/20 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
-    >
+    <div @click="createNewRole()" class="mt-4">
       <div
-        class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center group-hover:bg-primary/20 transition-colors"
+        class="group flex items-center justify-center bg-surface-container-low p-6 rounded-2xl border-2 border-dashed border-outline-variant/20 hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-all duration-300"
       >
-        <span
-          class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary transition-colors"
-          >add</span
+        <div
+          class="flex items-center gap-3 text-on-surface-variant group-hover:text-primary transition-colors"
         >
+          <span class="material-symbols-outlined">add_circle</span>
+          <span class="font-headline font-bold">Criar Novo Rolê</span>
+        </div>
       </div>
-      <span
-        class="font-headline font-bold text-on-surface-variant group-hover:text-primary"
-      >
-        Criar Novo Rolê
-      </span>
     </div>
+    <listRoles ref="listRolesRef"></listRoles>
     <modalComponent
       v-if="showModalCreate"
       @close-modal="showModalCreate = false"
+      @update-roles="fetchRoles()"
     ></modalComponent>
   </section>
 </template>
@@ -55,6 +50,13 @@ import listRoles from "./components/listRoles.vue";
 import { ref } from "vue";
 
 const showModalCreate = ref(false);
+const listRolesRef = ref(null);
+
+const fetchRoles = () => {
+  if (listRolesRef.value) {
+    listRolesRef.value.fetchUserRoles();
+  }
+};
 
 function createNewRole() {
   showModalCreate.value = true;

@@ -19,77 +19,56 @@
         </h3>
       </div>
       <button
+        @click="opemModal()"
         class="bg-surface-container-highest px-6 py-2 rounded-full text-sm font-bold border border-outline-variant/20 hover:text-primary transition-colors"
       >
         + Adicionar Item
       </button>
     </div>
     <div class="space-y-3">
-      <!-- Task Item -->
       <div
+        v-for="item in itensList"
+        :key="item.id"
         class="flex items-center justify-between p-5 bg-surface-container-low rounded-2xl border-l-4 border-primary/40"
       >
         <div class="flex items-center gap-4">
           <div
-            class="w-6 h-6 rounded-md border-2 border-primary flex items-center justify-center cursor-pointer bg-primary/10"
+            @click="handleToggleItem(item)"
+            class="w-6 h-6 rounded-md border-2 border-primary flex items-center justify-center cursor-pointer"
+            :class="
+              item.isDone ? 'border-primary bg-primary/10' : 'border-outline'
+            "
           >
             <span
+              v-if="item.isDone"
               class="material-symbols-outlined text-xs text-primary"
               style="font-variation-settings: 'FILL' 1"
               >check</span
             >
           </div>
+          <button
+            @click.stop="handleDeleteItem(item)"
+            class="text-on-surface-variant/50 hover:text-red-400 transition-colors"
+          >
+            <span class="material-symbols-outlined text-lg">delete</span>
+          </button>
           <div>
-            <p class="text-white font-bold">Comprar Carne (Picanha/Alcatra)</p>
+            <p class="text-white font-bold">{{ item.name }}</p>
             <p class="text-xs text-on-surface-variant">
               Responsável:
-              <span class="text-primary font-semibold">Ricardo Mendes</span>
+              <span class="text-primary font-semibold">
+                {{ item.responsibleName }}
+              </span>
             </p>
           </div>
         </div>
-        <div class="text-right">
-          <p class="text-white font-bold">R$ 450,00</p>
+        <div @click="edit(item)" class="text-right">
+          <p class="text-white font-bold">R$ {{ item.price.toFixed(2) }}</p>
           <span
             class="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-widest"
-            >Pago</span
           >
-        </div>
-      </div>
-      <div
-        class="flex items-center justify-between p-5 bg-surface-container-low rounded-2xl"
-      >
-        <div class="flex items-center gap-4">
-          <div
-            class="w-6 h-6 rounded-md border-2 border-outline flex items-center justify-center cursor-pointer"
-          ></div>
-          <div>
-            <p class="text-white font-bold">Trazer Carvão e Sal Grosso</p>
-            <p class="text-xs text-on-surface-variant">
-              Pendente: <span class="text-on-surface">Você</span>
-            </p>
-          </div>
-        </div>
-        <div class="text-right">
-          <p class="text-on-surface-variant font-bold">R$ 45,00</p>
-        </div>
-      </div>
-      <div
-        class="flex items-center justify-between p-5 bg-surface-container-low rounded-2xl"
-      >
-        <div class="flex items-center gap-4">
-          <div
-            class="w-6 h-6 rounded-md border-2 border-outline flex items-center justify-center cursor-pointer"
-          ></div>
-          <div>
-            <p class="text-white font-bold">Bebidas (Cerveja/Refrigerante)</p>
-            <p class="text-xs text-on-surface-variant">
-              Responsável:
-              <span class="text-primary font-semibold">Ana Paula</span>
-            </p>
-          </div>
-        </div>
-        <div class="text-right">
-          <p class="text-white font-bold">R$ 280,00</p>
+            {{ item.isDone ? "Pago" : "Pendente" }}
+          </span>
         </div>
       </div>
     </div>
@@ -112,3 +91,125 @@
     </div>
   </div>
 </template>
+<script setup>
+import { ref, watch, defineEmits } from "vue";
+import Swal from "sweetalert2";
+import { roleService } from "@/services/roles/roleService";
+
+const props = defineProps({
+  roleId: {
+    type: String,
+    default: "",
+  },
+  data: {
+    type: Object,
+    default: () => {
+      return {};
+    },
+  },
+});
+
+const emit = defineEmits(["open-modal"]);
+
+const itensList = ref([]);
+
+const opemModal = () => {
+  emit("open-modal");
+};
+
+async function handleToggleItem(item) {
+  const newStatus = !item.isDone;
+
+  if (newStatus) {
+    const result = await Swal.fire({
+      title: "Confirmar compra?",
+      text: `Você confirma que já comprou o item: ${item.name}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sim, comprei!",
+      cancelButtonText: "Ainda não",
+      background: "#1e293b",
+      color: "#f8fafc",
+      confirmButtonColor: "#10b981",
+    });
+
+    if (!result.isConfirmed) return;
+  } else {
+    const result = await Swal.fire({
+      title: "Desmarcar item?",
+      text: `O item "${item.name}" voltará para a lista de pendentes.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, desmarcar",
+      cancelButtonText: "Cancelar",
+      background: "#1e293b",
+      color: "#f8fafc",
+      confirmButtonColor: "#ef4444",
+    });
+
+    if (!result.isConfirmed) return;
+  }
+
+  const success = await roleService.toggleItemStatus(
+    props.roleId,
+    item.id,
+    newStatus
+  );
+
+  if (success) {
+    item.isDone = newStatus;
+
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: newStatus ? "Item marcado!" : "Item desmarcado!",
+      showConfirmButton: false,
+      timer: 1500,
+      background: "#1e293b",
+      color: "#f8fafc",
+    });
+  }
+}
+
+async function handleDeleteItem(item) {
+  const result = await Swal.fire({
+    title: "Remover item?",
+    text: `Tem certeza que deseja excluir "${item.name}" da lista?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sim, deletar",
+    cancelButtonText: "Cancelar",
+    background: "#1e293b",
+    color: "#f8fafc",
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#475569",
+  });
+
+  if (result.isConfirmed) {
+    const success = await roleService.deleteItemFromRole(props.roleId, item.id);
+
+    if (success) {
+      itensList.value = itensList.value.filter((i) => i.id !== item.id);
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Item removido!",
+        showConfirmButton: false,
+        timer: 1500,
+        background: "#1e293b",
+        color: "#f8fafc",
+      });
+    }
+  }
+}
+
+watch(
+  () => props.data,
+  (newData) => {
+    itensList.value = newData?.items || [];
+  },
+  { immediate: true }
+);
+</script>

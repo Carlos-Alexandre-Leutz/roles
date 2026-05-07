@@ -79,7 +79,7 @@ import { ref } from "vue";
 import { roleService } from "@/services/roles/roleService.ts";
 import searchFriends from "./searchFriends.vue";
 
-const emit = defineEmits(["close-modal"]);
+const emit = defineEmits(["close-modal", "update-roles"]);
 
 const eventName = ref("");
 const eventDateTime = ref("");
@@ -95,10 +95,12 @@ async function handleCreateEvent() {
   try {
     const eventData = {
       title: eventName.value,
+      address: locationVenue.value,
+      eventDateTime: eventDateTime.value,
     };
 
     await roleService.createRole(eventData, selectedFriends.value);
-
+    emit("update-roles");
     closeModal();
   } catch (error) {
     console.error("Error creating event:", error);

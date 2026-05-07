@@ -23,7 +23,10 @@
               Organize sua próxima experiência épica com seus amigos.
             </p>
           </header>
-          <modalForm @close-modal="closeModal()"></modalForm>
+          <modalForm
+            @close-modal="closeModal()"
+            @update-roles="updateRoles()"
+          ></modalForm>
         </div>
       </div>
     </div>
@@ -32,9 +35,12 @@
 <script setup>
 import modalForm from "./components/modalForm.vue";
 
-const emit = defineEmits(["close-modal"]);
+const emit = defineEmits(["close-modal", "update-roles"]);
 function closeModal() {
   emit("close-modal");
+}
+function updateRoles() {
+  emit("update-roles");
 }
 </script>
 
