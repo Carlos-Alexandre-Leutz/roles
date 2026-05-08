@@ -1,5 +1,5 @@
 <template>
-  <section class="mt-20 p-12 max-w-7xl mx-auto">
+  <section class="mt-20 p-3 md:p-12 max-w-7xl mx-auto">
     <div class="flex justify-between items-end mb-12">
       <div>
         <h2
@@ -24,7 +24,7 @@
         </div>
       </div>
     </div>
-    <div @click="createNewRole()" class="mt-4">
+    <div @click="createNewRole()" class="mb-4">
       <div
         class="group flex items-center justify-center bg-surface-container-low p-6 rounded-2xl border-2 border-dashed border-outline-variant/20 hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-all duration-300"
       >
@@ -39,17 +39,20 @@
     <listRoles ref="listRolesRef"></listRoles>
     <modalComponent
       v-if="showModalCreate"
-      @close-modal="showModalCreate = false"
+      @close-modal="closeModalCreate()"
       @update-roles="fetchRoles()"
     ></modalComponent>
   </section>
 </template>
 <script setup>
+import { ref, computed } from "vue";
+import { useStore } from "vuex";
 import modalComponent from "@/components/modalNewRole/launcherComponent.vue";
 import listRoles from "./components/listRoles.vue";
-import { ref } from "vue";
 
-const showModalCreate = ref(false);
+const store = useStore();
+
+const showModalCreate = computed(() => store.state.isModalCreateOpen);
 const listRolesRef = ref(null);
 
 const fetchRoles = () => {
@@ -59,6 +62,9 @@ const fetchRoles = () => {
 };
 
 function createNewRole() {
-  showModalCreate.value = true;
+  store.dispatch("openModalCreate");
+}
+function closeModalCreate() {
+  store.dispatch("closeModalCreate");
 }
 </script>

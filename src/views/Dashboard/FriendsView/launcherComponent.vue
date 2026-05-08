@@ -22,10 +22,10 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Left Column: Friends List -->
         <div class="lg:col-span-12 space-y-12">
-          <!-- Lista de Amigos -->
-          <friendsList></friendsList>
           <!-- Convites Pendentes -->
           <pendingInvitations></pendingInvitations>
+          <!-- Lista de Amigos -->
+          <friendsList></friendsList>
         </div>
       </div>
     </div>

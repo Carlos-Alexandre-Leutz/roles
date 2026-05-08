@@ -1,7 +1,7 @@
 <template>
-  <main class="ml-64">
+  <main class="ml-0 lg:ml-64">
     <header
-      class="top-0 left-64 right-0 fixed bg-[#0e0e0e] z-40 flex justify-between items-center px-8 py-4 shadow-[0_0_20px_rgba(157,0,255,0.05)]"
+      class="left-0 lg:left-64 fixed top-0 right-0 mb-6 bg-[#0e0e0e] z-40 flex justify-between items-center px-8 py-4 shadow-[0_0_20px_rgba(157,0,255,0.05)]"
     >
       <div class="flex items-center gap-4">
         <div
@@ -39,6 +39,7 @@
       </div>
     </header>
     <slot></slot>
+    <div class="h-32"></div>
   </main>
 </template>
 <script setup>

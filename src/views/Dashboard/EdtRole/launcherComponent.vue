@@ -113,39 +113,6 @@
       @close="showModalChecklistExpenses = false"
       @refresh="loadRoleData()"
     />
-    <!-- Bottom Navigation for Mobile -->''
-    <nav
-      class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0e0e0e]/95 backdrop-blur-2xl border-t border-outline-variant/10 flex justify-around items-center h-20 px-4 z-50"
-    >
-      <a class="flex flex-col items-center gap-1 text-primary" href="#">
-        <span
-          class="material-symbols-outlined"
-          style="font-variation-settings: 'FILL' 1"
-          >event</span
-        >
-        <span class="text-[10px] font-bold uppercase tracking-widest"
-          >Evento</span
-        >
-      </a>
-      <a class="flex flex-col items-center gap-1 text-[#adaaaa]" href="#">
-        <span class="material-symbols-outlined">group</span>
-        <span class="text-[10px] font-bold uppercase tracking-widest"
-          >Pessoas</span
-        >
-      </a>
-      <a class="flex flex-col items-center gap-1 text-[#adaaaa]" href="#">
-        <span class="material-symbols-outlined">checklist</span>
-        <span class="text-[10px] font-bold uppercase tracking-widest"
-          >Tasks</span
-        >
-      </a>
-      <a class="flex flex-col items-center gap-1 text-[#adaaaa]" href="#">
-        <span class="material-symbols-outlined">forum</span>
-        <span class="text-[10px] font-bold uppercase tracking-widest"
-          >Chat</span
-        >
-      </a>
-    </nav>
   </div>
 </template>
 

@@ -113,14 +113,13 @@
                 um convite?
               </p>
             </div>
-
-            <router-link
-              to="/invite"
+            <button
+              @click="inviteViaWhatsApp"
               class="inline-flex items-center gap-2 px-8 py-3 bg-white text-black rounded-full font-black text-sm hover:bg-primary transition-colors shadow-xl"
             >
               <span class="material-symbols-outlined text-base">send</span>
               CONVIDAR AGORA
-            </router-link>
+            </button>
           </div>
         </div>
       </div>
@@ -155,11 +154,36 @@ async function performSearch() {
 
 async function sendFriendRequest(userId) {
   const result = await friendService.sendFriendRequest(userId);
+
   if (result.success) {
     const user = usersList.value.find((u) => u.id === userId);
     if (user) user.isRequested = true;
+    Swal.fire({
+      title: "Solicitação Enviada!",
+      text: "Agora é só esperar o seu parceiro aceitar.",
+      icon: "success",
+      background: "#1a1a1a",
+      color: "#ffffff",
+      confirmButtonColor: "#db90ff",
+      timer: 2000,
+      timerProgressBar: true,
+      showConfirmButton: false,
+    });
+  } else {
+    Swal.fire({
+      title: "Ops!",
+      text: result.message || "Houve um erro ao enviar a solicitação.",
+      icon: "info",
+      background: "#1a1a1a",
+      color: "#ffffff",
+      confirmButtonColor: "#db90ff",
+    });
   }
 }
+
+const inviteViaWhatsApp = () => {
+  friendService.inviteViaWhatsApp();
+};
 
 const formatName = (fullName) => {
   return userService.formatName(fullName);

@@ -9,9 +9,6 @@
           {{ confirmedCount }} pessoas confirmadas até agora
         </p>
       </div>
-      <button class="text-primary font-bold text-sm hover:underline">
-        Ver Todos
-      </button>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <template

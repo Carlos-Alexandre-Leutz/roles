@@ -32,7 +32,7 @@
             <h1
               class="font-headline text-4xl font-extrabold tracking-tight text-on-surface"
             >
-              Join the <span class="text-primary">Stage</span>
+              Join the <span class="text-primary">Roles</span>
             </h1>
             <p class="text-on-surface-variant text-sm tracking-wide">
               Enter your details to create your profile

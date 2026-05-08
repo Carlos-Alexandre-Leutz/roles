@@ -49,21 +49,16 @@
               'https://ui-avatars.com/api/?name=' + friend.friendName
             "
           />
-          <div
-            class="absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-surface shadow-sm"
-            :class="friend.isOnline ? 'bg-green-500' : 'bg-outline'"
-          ></div>
         </div>
         <div class="flex-grow">
           <h4 class="font-bold text-on-surface">{{ friend.friendName }}</h4>
-          <p class="text-xs text-on-surface-variant">
-            {{ friend.isOnline ? "Online agora" : "Offline" }}
-          </p>
         </div>
         <button
-          class="p-2 text-on-surface-variant hover:text-primary transition-colors"
+          @click="confirmDelete(friend)"
+          class="p-2 text-on-surface-variant hover:text-error transition-all duration-200 active:scale-90"
+          title="Remover Amizade"
         >
-          <span class="material-symbols-outlined">chat_bubble</span>
+          <span class="material-symbols-outlined">person_remove</span>
         </button>
       </div>
     </div>
@@ -74,19 +69,13 @@
     >
       <p class="text-neutral-500 text-sm">Você ainda não adicionou amigos.</p>
     </div>
-
-    <button
-      v-if="friendsList.length > 0"
-      class="w-full mt-6 py-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 text-on-surface-variant font-bold hover:bg-surface-container hover:text-on-surface transition-all"
-    >
-      Ver todos os amigos
-    </button>
   </section>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import { friendService } from "@/services/friends/friendService";
+import Swal from "sweetalert2";
 
 const friendsList = ref([]);
 const loading = ref(true);
@@ -97,6 +86,48 @@ async function loadFriends() {
     friendsList.value = await friendService.getMyFriends();
   } finally {
     loading.value = false;
+  }
+}
+
+async function confirmDelete(friend) {
+  console.log(friend);
+
+  const result = await Swal.fire({
+    title: "Remover Amizade?",
+    text: `Você tem certeza que deseja remover ${friend.friendName}?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#db90ff",
+    cancelButtonColor: "#201f1f",
+    confirmButtonText: "Sim, remover!",
+    cancelButtonText: "Cancelar",
+    background: "#1a1a1a",
+    color: "#ffffff",
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await friendService.removeFriend(friend.id);
+
+      Swal.fire({
+        title: "Removido!",
+        text: `${friend.friendName} não está mais na sua lista.`,
+        icon: "success",
+        background: "#1a1a1a",
+        color: "#ffffff",
+        confirmButtonColor: "#db90ff",
+      });
+
+      loadFriends();
+    } catch (error) {
+      Swal.fire({
+        title: "Erro!",
+        text: "Não foi possível remover o amigo.",
+        icon: "error",
+        background: "#1a1a1a",
+        color: "#ffffff",
+      });
+    }
   }
 }
 

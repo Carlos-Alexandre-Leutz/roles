@@ -9,7 +9,8 @@ import {
   getDocs,
   serverTimestamp,
   doc,
-  updateDoc
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 
 export const friendService = {
@@ -91,7 +92,6 @@ export const friendService = {
       return { success: false, error: e };
     }
   },
-
   async getMyFriends() {
     try {
       const user = await authGuard.ensureAuth();
@@ -137,4 +137,26 @@ export const friendService = {
       return [];
     }
   },
+  async removeFriend(friendshipId: string) {
+    try {
+      const friendshipRef = doc(db, "friendships", friendshipId);
+
+      await deleteDoc(friendshipRef);
+
+      return { success: true };
+    } catch (e) {
+      console.error("Erro ao remover amizade no Service:", e);
+      return { success: false, error: e };
+    }
+  },
+  inviteViaWhatsApp() {
+    const urlSite = "https://carlos-alexandre-leutz.github.io/roles/#/register";
+    const mensagem = `Bora marcar um rolê? Entra aí no Roles pra gente combinar: ${urlSite}`;
+
+    const msgFormatada = encodeURIComponent(mensagem);
+
+    const linkZap = `https://wa.me/?text=${msgFormatada}`;
+
+    window.open(linkZap, "_blank");
+  }
 };
