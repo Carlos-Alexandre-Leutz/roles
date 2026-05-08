@@ -13,7 +13,8 @@ import {
   getDoc,
   updateDoc,
   arrayUnion,
-  deleteDoc
+  deleteDoc,
+  arrayRemove,
 } from "firebase/firestore";
 
 export const roleService = {
@@ -140,6 +141,7 @@ export const roleService = {
   },
   async getRoleById(roleId: string) {
     try {
+      const user = await authGuard.ensureAuth();
       const docRef = doc(db, "roles", roleId);
       const docSnap = await getDoc(docRef);
 
@@ -156,14 +158,16 @@ export const roleService = {
         const userProfile = profiles.find(u => u.uid === p.uid);
         return {
           ...userProfile,
-          status: p.status
+          status: p.status,
         };
       });
 
       return {
         id: docSnap.id,
         ...roleData,
-        participants: hydratedParticipants
+        participants: hydratedParticipants,
+        userId: user.uid
+
       };
     } catch (e) {
       console.error("Erro no getRoleById:", e);
@@ -286,6 +290,171 @@ export const roleService = {
     } catch (e) {
       console.error("Erro ao deletar role:", e);
       throw e;
+    }
+  },
+  async updateRole(id: string, data: any,) {
+    const roleRef = doc(db, "roles", id);
+    return await updateDoc(roleRef, {
+      ...data,
+      updatedAt: serverTimestamp()
+    });
+  },
+  async volunteerForItem(roleId: string, item: any) {
+    try {
+      const user = await authGuard.ensureAuth();
+
+      const result = await Swal.fire({
+        title: 'Assumir tarefa?',
+        text: `Você quer ser o responsável por: ${item.name}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, eu cuido!',
+        cancelButtonText: 'Cancelar',
+        background: "#1e293b",
+        color: "#f8fafc",
+        confirmButtonColor: "#db90ff",
+        cancelButtonColor: "#475569",
+      });
+
+      if (!result.isConfirmed) return null;
+
+      const roleRef = doc(db, "roles", roleId);
+      const roleSnap = await getDoc(roleRef);
+
+      if (roleSnap.exists()) {
+        const data = roleSnap.data();
+
+        const updatedItems = data.items.map(i => {
+          if (i.id === item.id) {
+            return {
+              ...i,
+              responsibleId: user.uid,
+              responsibleName: user.displayName || 'Convidado'
+            };
+          }
+          return i;
+        });
+
+        await updateDoc(roleRef, { items: updatedItems });
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Você assumiu a tarefa!',
+          showConfirmButton: false,
+          timer: 2000,
+          background: "#1e293b",
+          color: "#f8fafc",
+        });
+
+        return {
+          responsibleId: user.uid,
+          responsibleName: user.displayName || 'Convidado'
+        };
+      }
+    } catch (error) {
+      console.error("Erro no processo de voluntariado:", error);
+      return null;
+    }
+  },
+  async addFriendsByUid(roleId: string, uids: string[]) {
+    const result = await Swal.fire({
+      title: 'Enviar convites?',
+      text: `Você está convidando ${uids.length} ${uids.length === 1 ? 'amigo' : 'amigos'} para o rolê.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, enviar!',
+      cancelButtonText: 'Cancelar',
+      background: "#1e293b",
+      color: "#f8fafc",
+      confirmButtonColor: "#db90ff",
+    });
+
+    if (!result.isConfirmed) return false;
+
+    try {
+      const roleRef = doc(db, "roles", roleId);
+
+      const newParticipants = uids.map(id => ({
+        uid: id,
+        status: 'pending'
+      }));
+
+      await updateDoc(roleRef, {
+        participants: arrayUnion(...newParticipants)
+      });
+
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Convites enviados!',
+        showConfirmButton: false,
+        timer: 2000,
+        background: "#1e293b",
+        color: "#f8fafc",
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Erro ao convidar amigos:", error);
+      Swal.fire({
+        title: "Erro",
+        text: "Não conseguimos salvar os convites.",
+        icon: "error",
+        background: "#1e293b",
+        color: "#f8fafc",
+      });
+      return false;
+    }
+  },
+  async removeParticipantByUid(roleId: string, targetUid: string) {
+    const result = await Swal.fire({
+      title: 'Remover amigo?',
+      text: "Ele não terá mais acesso a este rolê.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, remover',
+      cancelButtonText: 'Cancelar',
+      background: "#1e293b",
+      color: "#f8fafc",
+      confirmButtonColor: "#f87171",
+    });
+
+    if (!result.isConfirmed) return false;
+
+    try {
+      const roleRef = doc(db, "roles", roleId);
+      const roleSnap = await getDoc(roleRef);
+
+      if (roleSnap.exists()) {
+        const participants = roleSnap.data().participants || [];
+
+        const participantObject = participants.find(p => p.uid === targetUid);
+
+        if (participantObject) {
+          await updateDoc(roleRef, {
+            participants: arrayRemove(participantObject)
+          });
+
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Removido!',
+            showConfirmButton: false,
+            timer: 2000,
+            background: "#1e293b",
+            color: "#f8fafc",
+          });
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Erro ao remover participante:", error);
+      return false;
     }
   }
 };

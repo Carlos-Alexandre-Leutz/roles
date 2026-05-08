@@ -130,6 +130,8 @@
 import { ref } from "vue";
 import { userService } from "@/services/users/userService";
 import { friendService } from "@/services/friends/friendService";
+import Swal from "sweetalert2";
+
 const searchQuery = ref("");
 const usersList = ref([]);
 

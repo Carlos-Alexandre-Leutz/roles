@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleCreateEvent()" class="space-y-6">
+  <form @submit.prevent="handleSaveEvent()" class="space-y-6">
     <!-- Event Name -->
     <div class="space-y-2">
       <label class="text-sm font-bold text-on-surface-variant ml-1"
@@ -55,7 +55,7 @@
       </div>
     </div>
     <!-- Invite Friends Section -->
-    <searchFriends v-model="selectedFriends"></searchFriends>
+    <searchFriends v-if="!roleId" v-model="selectedFriends"></searchFriends>
     <!-- Actions -->
     <div class="flex items-center justify-end space-x-4 pt-4">
       <button
@@ -69,15 +69,31 @@
         class="px-10 py-4 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-extrabold shadow-[0_0_40px_rgba(219,144,255,0.3)] hover:brightness-110 active:scale-95 transition-all"
         type="submit"
       >
-        {{ isLoading ? "Criando..." : "Criar Rolê" }}
+        {{
+          isLoading ? "Salvando..." : roleId ? "Atualizar Rolê" : "Criar Rolê"
+        }}
       </button>
     </div>
   </form>
 </template>
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { roleService } from "@/services/roles/roleService.ts";
+import Swal from "sweetalert2";
 import searchFriends from "./searchFriends.vue";
+
+const props = defineProps({
+  roleId: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  data: {
+    type: Object,
+    required: false,
+    default: () => ({}),
+  },
+});
 
 const emit = defineEmits(["close-modal", "update-roles"]);
 
@@ -87,23 +103,39 @@ const locationVenue = ref("");
 const isLoading = ref(false);
 const selectedFriends = ref([]);
 
-async function handleCreateEvent() {
+async function handleSaveEvent() {
   if (!eventName.value) return;
 
   isLoading.value = true;
 
   try {
     const eventData = {
-      title: eventName.value,
-      address: locationVenue.value,
-      eventDateTime: eventDateTime.value,
+      title: eventName.value || "",
+      address: locationVenue.value || "",
+      eventDateTime: eventDateTime.value || null,
     };
 
-    await roleService.createRole(eventData, selectedFriends.value);
+    if (props.roleId) {
+      const friends = selectedFriends.value || [];
+      await roleService.updateRole(props.roleId, eventData, friends);
+    } else {
+      await roleService.createRole(eventData, selectedFriends.value || []);
+    }
+
     emit("update-roles");
     closeModal();
+
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: props.roleId ? "Alterações salvas!" : "Evento criado!",
+      showConfirmButton: false,
+      timer: 2000,
+    });
   } catch (error) {
-    console.error("Error creating event:", error);
+    console.error("Error saving event:", error);
+    Swal.fire("Erro", "Não foi possível salvar as alterações.", "error");
   } finally {
     isLoading.value = false;
   }
@@ -111,4 +143,19 @@ async function handleCreateEvent() {
 function closeModal() {
   emit("close-modal");
 }
+
+function populateForm() {
+  if (props.data && Object.keys(props.data).length > 0) {
+    eventName.value = props.data.title || "";
+    eventDateTime.value = props.data.eventDateTime || "";
+    locationVenue.value = props.data.address || "";
+    selectedFriends.value = props.data.participants
+      ? props.data.participants.map((p) => p.id)
+      : [];
+  }
+}
+
+onMounted(() => {
+  populateForm();
+});
 </script>

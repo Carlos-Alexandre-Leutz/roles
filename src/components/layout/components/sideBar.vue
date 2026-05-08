@@ -91,16 +91,6 @@
         <span class="material-symbols-outlined mr-4">group</span>
         <span class="font-medium">Amigos</span>
       </RouterLink>
-      <RouterLink
-        to="/settings"
-        class="flex flex-col items-center gap-1 text-[#adaaaa]"
-        active-class="!opacity-100 !text-[#db90ff] font-bold border-r-4 border-[#db90ff] bg-gradient-to-r from-[#db90ff]/10 to-transparent"
-      >
-        <span class="material-symbols-outlined">settings</span>
-        <span class="text-[10px] font-bold uppercase tracking-widest"
-          >Configurações</span
-        >
-      </RouterLink>
       <div
         class="flex flex-col items-center gap-1 text-[#adaaaa]"
         @click="createNewRole()"

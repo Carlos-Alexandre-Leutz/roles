@@ -93,6 +93,10 @@ const router = createRouter({
         const isOwner = await roleService.canEditRole(roleId);
         const status = await roleService.getMyStatusInRole(roleId);
 
+        if (isOwner) {
+          return next({ name: 'edit-role', params: { id: roleId } });
+        }
+
         to.meta.isOwner = isOwner;
         to.meta.status = status;
         next();

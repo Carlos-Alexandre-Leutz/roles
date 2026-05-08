@@ -4,7 +4,11 @@
       class="text-sm font-bold text-on-surface-variant ml-1 flex justify-between"
     >
       <span>Convidar Amigos</span>
-      <span class="text-primary cursor-pointer hover:underline">Ver Todos</span>
+      <router-link to="/search-friends">
+        <span class="text-primary cursor-pointer hover:underline">
+          Adicionar novos amigos
+        </span>
+      </router-link>
     </label>
 
     <div class="relative mb-4">
@@ -38,6 +42,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  excludeIds: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -60,10 +68,17 @@ async function getMyFriends() {
 }
 
 const filteredFriends = computed(() => {
-  let result = friends.value.filter((f) =>
-    f.friendName.toLowerCase().includes(searchTerm.value.toLowerCase())
-  );
-  return result.slice(0, 10);
+  return friends.value
+    .filter((f) => {
+      const isExcluded = props.excludeIds.includes(f.friendId);
+
+      const matchesSearch = f.friendName
+        .toLowerCase()
+        .includes(searchTerm.value.toLowerCase());
+
+      return !isExcluded && matchesSearch;
+    })
+    .slice(0, 10);
 });
 
 onMounted(() => {

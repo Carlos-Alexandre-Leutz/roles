@@ -28,6 +28,13 @@
         >
           <span class="material-symbols-outlined">notifications</span>
         </button>
+        <RouterLink
+          to="/settings"
+          active-class="!opacity-100 !text-[#db90ff] font-bold border-r-4 border-[#db90ff] bg-gradient-to-r from-[#db90ff]/10 to-transparent"
+        >
+          <span class="material-symbols-outlined">settings</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest"></span>
+        </RouterLink>
         <div class="h-6 w-[1px] bg-outline-variant/20"></div>
         <button
           @click="handleLogout()"

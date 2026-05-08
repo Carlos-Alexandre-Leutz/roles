@@ -17,13 +17,16 @@
             <h2
               class="text-4xl font-extrabold font-headline tracking-tight text-on-surface mb-2"
             >
-              Criar Novo <span class="text-primary">Rolê</span>
+              {{ roleId ? "Editar" : "Criar Novo" }}
+              <span class="text-primary">Rolê</span>
             </h2>
             <p class="text-on-surface-variant font-body">
               Organize sua próxima experiência épica com seus amigos.
             </p>
           </header>
           <modalForm
+            :role-id="roleId"
+            :data="data"
             @close-modal="closeModal()"
             @update-roles="updateRoles()"
           ></modalForm>
@@ -34,6 +37,19 @@
 </template>
 <script setup>
 import modalForm from "./components/modalForm.vue";
+
+const props = defineProps({
+  roleId: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  data: {
+    type: Object,
+    required: false,
+    default: () => ({}),
+  },
+});
 
 const emit = defineEmits(["close-modal", "update-roles"]);
 function closeModal() {

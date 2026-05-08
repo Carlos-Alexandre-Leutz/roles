@@ -213,7 +213,7 @@ const viewModel = ref({
 });
 
 const handleAddItem = async () => {
-  if (!viewModel.value.name || !viewModel.value.responsible) {
+  if (!viewModel.value.name) {
     Swal.fire("Ops!", "Preencha todos os campos", "warning");
     return;
   }
@@ -224,9 +224,9 @@ const handleAddItem = async () => {
 
   const success = await roleService.addItemToRole(props.roleId, {
     name: viewModel.value.name,
-    price: viewModel.value.price,
-    responsibleId: viewModel.value.responsible,
-    responsibleName: res?.displayName || "Convidado",
+    price: viewModel.value.price || 0,
+    responsibleId: viewModel.value.responsible || null,
+    responsibleName: res?.displayName || "Pode ser você =)",
   });
 
   if (success) {

@@ -65,24 +65,12 @@
               </template>
               <template v-if="isOwner">
                 <button
-                  class="flex items-center gap-2 px-8 py-4 bg-surface-container-highest/60 backdrop-blur-xl rounded-full font-bold border border-outline-variant/20 hover:bg-surface-container-highest transition-all"
+                  @click="showModalNewRole = true"
+                  class="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-container rounded-full font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-all"
                 >
-                  <span class="material-symbols-outlined">share</span>
-                  Convidar
+                  <span class="material-symbols-outlined">edit</span>
+                  Editar Evento
                 </button>
-                <router-link
-                  :to="{
-                    name: 'edit-role',
-                    params: { id: roleId },
-                  }"
-                >
-                  <button
-                    class="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-container rounded-full font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-all"
-                  >
-                    <span class="material-symbols-outlined">edit</span>
-                    Editar Evento
-                  </button>
-                </router-link>
               </template>
             </div>
           </div>
@@ -90,12 +78,16 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div class="lg:col-span-8 space-y-8">
             <guestList
+              :role-id="roleId"
               :is-view-only="isViewOnly"
               :is-editing="isEditing"
               :data="currentRole"
+              @update-roles="loadRoleData()"
             ></guestList>
             <checklistExpenses
+              :user-id="userId"
               :role-id="roleId"
+              :is-editing="isEditing"
               :data="currentRole"
               @open-modal="showModalChecklistExpenses = true"
             ></checklistExpenses>
@@ -113,6 +105,13 @@
       @close="showModalChecklistExpenses = false"
       @refresh="loadRoleData()"
     />
+    <modalNewRole
+      v-if="showModalNewRole"
+      :role-id="roleId"
+      :data="currentRole"
+      @close-modal="showModalNewRole = false"
+      @update-roles="loadRoleData()"
+    ></modalNewRole>
   </div>
 </template>
 
@@ -124,6 +123,7 @@ import guestList from "./components/guestList.vue";
 import checklistExpenses from "./components/checklistExpenses.vue";
 import eventChat from "./components/eventChat.vue";
 import modalChecklistExpenses from "./components/modalChecklistExpenses.vue";
+import modalNewRole from "@/components/modalNewRole/launcherComponent.vue";
 
 import { roleService } from "@/services/roles/roleService.ts";
 
@@ -146,7 +146,9 @@ const emit = defineEmits(["refresh"]);
 const route = useRoute();
 
 const showModalChecklistExpenses = ref(false);
+const showModalNewRole = ref(false);
 
+const userId = ref(null);
 const roleId = route.params.id;
 const isViewOnly = computed(() => props.mode === "view");
 const isEditing = computed(() => props.mode === "edit");
@@ -163,6 +165,7 @@ async function loadRoleData() {
     const data = await roleService.getRoleById(roleId);
     if (data) {
       currentRole.value = data;
+      userId.value = data.userId;
     }
   } finally {
     loading.value = false;
