@@ -96,6 +96,9 @@ const router = createRouter({
         if (isOwner) {
           return next({ name: 'edit-role', params: { id: roleId } });
         }
+        if (!status) {
+          return next('/dashboard');
+        }
 
         to.meta.isOwner = isOwner;
         to.meta.status = status;
