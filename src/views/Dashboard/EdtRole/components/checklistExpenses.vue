@@ -34,7 +34,7 @@
       >
         <div class="flex items-center gap-4">
           <div
-            @click="handleToggleItem(item)"
+            @click="handleToggleItem(item, userId)"
             class="w-6 h-6 rounded-md border-2 border-primary flex items-center justify-center cursor-pointer"
             :class="
               item.isDone ? 'border-primary bg-primary/10' : 'border-outline'
@@ -133,6 +133,7 @@
         </p>
       </div>
       <button
+        v-if="isEditing"
         class="bg-primary text-on-primary-container px-8 py-3 rounded-full font-bold"
       >
         Dividir Conta
@@ -182,7 +183,10 @@ const totalPrice = computed(() => {
   }, 0);
 });
 
-async function handleToggleItem(item) {
+async function handleToggleItem(item, userId) {
+  if (item.responsibleId !== userId) {
+    return;
+  }
   const newStatus = !item.isDone;
 
   if (newStatus) {
