@@ -70,12 +70,15 @@
               <button
                 v-else
                 @click="sendFriendRequest(user.id)"
-                class="px-6 py-2.5 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                :disabled="user.isSending"
+                class="disabled:opacity-60 disabled:pointer-events-none px-6 py-2.5 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
               >
                 <span class="material-symbols-outlined text-base"
                   >person_add</span
                 >
-                <span class="hidden sm:inline">Adicionar Amigo</span>
+                <span class="hidden sm:inline">{{
+                  user.isSending ? "Enviando..." : "Adicionar Amigo"
+                }}</span>
               </button>
             </div>
           </div>
@@ -155,11 +158,18 @@ async function performSearch() {
 }
 
 async function sendFriendRequest(userId) {
-  const result = await friendService.sendFriendRequest(userId);
+  const user = usersList.value.find((u) => u.id === userId);
+  if (!user || user.isSending) return;
+  user.isSending = true;
+  const result = await friendService
+    .sendFriendRequest(userId)
+    .catch(() => ({ success: false }))
+    .finally(() => {
+      user.isSending = false;
+    });
 
   if (result.success) {
-    const user = usersList.value.find((u) => u.id === userId);
-    if (user) user.isRequested = true;
+    user.isRequested = true;
     Swal.fire({
       title: "Solicitação Enviada!",
       text: "Agora é só esperar o seu parceiro aceitar.",

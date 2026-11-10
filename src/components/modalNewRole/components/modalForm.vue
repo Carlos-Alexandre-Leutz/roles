@@ -16,7 +16,7 @@
       </div>
     </div>
     <!-- Date and Location Grid -->
-    <div class="grid grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <div class="space-y-2">
         <label class="text-sm font-bold text-on-surface-variant ml-1"
           >Data e Hora</label
@@ -48,10 +48,45 @@
           <input
             v-model="locationVenue"
             class="w-full bg-transparent border-none py-4 px-2 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-0"
-            placeholder="São Paulo, SP"
+            placeholder="Endereço ou: na casa do João"
             type="text"
           />
         </div>
+      </div>
+    </div>
+    <div class="space-y-2">
+      <label class="text-sm font-bold text-on-surface-variant ml-1"
+        >Capa do Rolê</label
+      >
+      <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+        <button
+          type="button"
+          @click="coverId = null"
+          class="rounded-2xl p-3 text-xs font-bold border transition-all"
+          :class="
+            !coverId
+              ? 'border-primary bg-primary/20 text-primary'
+              : 'border-outline-variant/20 text-on-surface-variant'
+          "
+        >
+          <span class="material-symbols-outlined block">auto_awesome</span>
+          Automática
+        </button>
+        <button
+          v-for="c in covers"
+          :key="c.id"
+          type="button"
+          @click="coverId = c.id"
+          class="rounded-2xl p-3 text-xs font-bold border transition-all"
+          :class="
+            coverId === c.id
+              ? 'border-primary bg-primary/20 text-primary'
+              : 'border-outline-variant/20 text-on-surface-variant'
+          "
+        >
+          <span class="material-symbols-outlined block">{{ c.icon }}</span>
+          {{ c.label }}
+        </button>
       </div>
     </div>
     <!-- Invite Friends Section -->
@@ -81,6 +116,7 @@ import { ref, onMounted } from "vue";
 import { roleService } from "@/services/roles/roleService.ts";
 import Swal from "sweetalert2";
 import searchFriends from "./searchFriends.vue";
+import { covers } from "@/data/covers";
 
 const props = defineProps({
   roleId: {
@@ -100,6 +136,7 @@ const emit = defineEmits(["close-modal", "update-roles"]);
 const eventName = ref("");
 const eventDateTime = ref("");
 const locationVenue = ref("");
+const coverId = ref(null);
 const isLoading = ref(false);
 const selectedFriends = ref([]);
 
@@ -113,6 +150,7 @@ async function handleSaveEvent() {
       title: eventName.value || "",
       address: locationVenue.value || "",
       eventDateTime: eventDateTime.value || null,
+      cover: coverId.value,
     };
 
     if (props.roleId) {
@@ -149,6 +187,7 @@ function populateForm() {
     eventName.value = props.data.title || "";
     eventDateTime.value = props.data.eventDateTime || "";
     locationVenue.value = props.data.address || "";
+    coverId.value = props.data.cover || null;
     selectedFriends.value = props.data.participants
       ? props.data.participants.map((p) => p.id)
       : [];

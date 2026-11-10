@@ -1,6 +1,7 @@
 import { db } from "../firebase.ts";
 import { authGuard } from "../authGuard.ts";
 import { userService } from "@/services/users/userService.ts"
+import { notificationService } from "@/services/notifications/notificationService.ts"
 import Swal from 'sweetalert2';
 import {
   collection,
@@ -15,7 +16,23 @@ import {
   arrayUnion,
   deleteDoc,
   arrayRemove,
+  onSnapshot,
+  orderBy,
+  runTransaction,
 } from "firebase/firestore";
+
+async function updateItems(roleId: string, mutate: (items: any[]) => any[]) {
+  const roleRef = doc(db, "roles", roleId);
+  return runTransaction(db, async (tx) => {
+    const snap = await tx.get(roleRef);
+    if (!snap.exists()) throw new Error("Role não encontrado");
+    const items = Array.isArray(snap.data().items) ? snap.data().items : [];
+    tx.update(roleRef, { items: mutate(items) });
+  });
+}
+
+const myName = (user: any) =>
+  userService.formatName(user?.displayName) || "Alguém";
 
 export const roleService = {
   async createRole(roleData: any, friendsIds: string[] = []) {
@@ -37,8 +54,16 @@ export const roleService = {
         ownerId: user.uid,
         address: roleData.address,
         eventDateTime: roleData.eventDateTime,
+        cover: roleData.cover || null,
         participants: participants,
         createdAt: serverTimestamp()
+      });
+
+      await notificationService.notifyMany(friendsIds, {
+        type: "role_invite",
+        title: "Novo rolê!",
+        body: `${myName(user)} te convidou para "${roleData.title}"`,
+        roleId: docRef.id,
       });
 
       return docRef.id;
@@ -65,6 +90,13 @@ export const roleService = {
       });
 
       await updateDoc(roleRef, { participants: updatedParticipants });
+
+      await notificationService.notify(roleSnap.data().ownerId, {
+        type: "role_response",
+        title: status === "confirmed" ? "Presença confirmada" : "Convite recusado",
+        body: `${myName(user)} ${status === "confirmed" ? "vai" : "não vai"} em "${roleSnap.data().title}"`,
+        roleId,
+      });
 
       if (status === 'confirmed') {
         Swal.fire({
@@ -210,14 +242,14 @@ export const roleService = {
       return null;
     }
   },
-  async addItemToRole(roleId: number, itemData: any) {
+  async addItemToRole(roleId: string, itemData: any) {
     try {
       const roleRef = doc(db, "roles", roleId);
 
       const newItem = {
         id: Date.now(),
         name: itemData.name,
-        price: parseFloat(itemData.price),
+        price: Number(itemData.price) || 0,
         responsibleId: itemData.responsibleId,
         responsibleName: itemData.responsibleName,
         isDone: false,
@@ -228,6 +260,16 @@ export const roleService = {
         items: arrayUnion(newItem)
       });
 
+      if (itemData.responsibleId) {
+        const me = await authGuard.ensureAuth();
+        await notificationService.notify(itemData.responsibleId, {
+          type: "item_assigned",
+          title: "Você tem uma tarefa",
+          body: `${myName(me)} te escalou para levar: ${itemData.name}`,
+          roleId,
+        });
+      }
+
       return true;
     } catch (e) {
       console.error("Erro ao adicionar item:", e);
@@ -235,29 +277,10 @@ export const roleService = {
     }
   },
   async toggleItemStatus(roleId: string, itemId: number, isDone: boolean) {
-
     try {
-      const roleRef = doc(db, "roles", roleId);
-      const roleSnap = await getDoc(roleRef);
-
-      if (!roleSnap.exists()) {
-        throw new Error("Role não encontrado");
-      }
-
-      const data = roleSnap.data();
-      const items = Array.isArray(data.items) ? data.items : [];
-
-      const updatedItems = items.map((item: any) => {
-        if (item.id === itemId) {
-          return { ...item, isDone: isDone };
-        }
-        return item;
-      });
-
-      await updateDoc(roleRef, {
-        items: updatedItems
-      });
-
+      await updateItems(roleId, (items) =>
+        items.map((item) => (item.id === itemId ? { ...item, isDone } : item))
+      );
       return true;
     } catch (e) {
       console.error("Erro ao atualizar status do item:", e);
@@ -266,16 +289,9 @@ export const roleService = {
   },
   async deleteItemFromRole(roleId: string, itemId: number) {
     try {
-      const roleRef = doc(db, "roles", roleId);
-      const roleSnap = await getDoc(roleRef);
-
-      if (!roleSnap.exists()) return false;
-
-      const items = roleSnap.data().items || [];
-
-      const updatedItems = items.filter((item: any) => item.id !== itemId);
-
-      await updateDoc(roleRef, { items: updatedItems });
+      await updateItems(roleId, (items) =>
+        items.filter((item) => item.id !== itemId)
+      );
       return true;
     } catch (e) {
       console.error("Erro ao deletar item:", e);
@@ -299,6 +315,131 @@ export const roleService = {
       updatedAt: serverTimestamp()
     });
   },
+  async abandonItem(roleId: string, itemId: number) {
+    try {
+      const user = await authGuard.ensureAuth();
+      await updateItems(roleId, (items) =>
+        items.map((i) =>
+          i.id === itemId && i.responsibleId === user.uid
+            ? { ...i, responsibleId: null, responsibleName: "Pode ser você =)", isDone: false }
+            : i
+        )
+      );
+      return true;
+    } catch (e) {
+      console.error("Erro ao abandonar item:", e);
+      return false;
+    }
+  },
+  async updateItemPrice(roleId: string, itemId: number, price: number) {
+    try {
+      await updateItems(roleId, (items) =>
+        items.map((i) =>
+          i.id === itemId ? { ...i, price: Number(price) || 0 } : i
+        )
+      );
+      return true;
+    } catch (e) {
+      console.error("Erro ao atualizar preço:", e);
+      return false;
+    }
+  },
+  async addSettlement(roleId: string, from: string, to: string, amount: number) {
+    try {
+      await updateDoc(doc(db, "roles", roleId), {
+        settlements: arrayUnion({
+          id: Date.now(),
+          from,
+          to,
+          amount: Math.round(amount * 100) / 100,
+          createdAt: new Date().toISOString(),
+        }),
+      });
+
+      const me = await authGuard.ensureAuth();
+      const other = me.uid === from ? to : from;
+      const value = amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+      await notificationService.notify(other, {
+        type: "payment",
+        title: "Pagamento registrado",
+        body:
+          me.uid === from
+            ? `${myName(me)} informou que te pagou R$ ${value}`
+            : `${myName(me)} confirmou que recebeu R$ ${value}`,
+        roleId,
+      });
+      return true;
+    } catch (e) {
+      console.error("Erro ao registrar pagamento:", e);
+      return false;
+    }
+  },
+  subscribeToMessages(roleId: string, callback: (messages: any[]) => void) {
+    const q = query(
+      collection(db, "roles", roleId, "messages"),
+      orderBy("createdAt", "asc")
+    );
+    return onSnapshot(
+      q,
+      (snap) => {
+        callback(
+          snap.docs.map((d) => {
+            const data = d.data({ serverTimestamps: "estimate" });
+            return {
+              id: d.id,
+              senderId: data.senderId,
+              text: data.text,
+              createdAt: data.createdAt?.toDate?.() || new Date(),
+            };
+          })
+        );
+      },
+      (e) => console.error("Erro ao ouvir mensagens:", e)
+    );
+  },
+  async notifyChatMessage(roleId: string, user: any, text: string) {
+    try {
+      const key = `chatNotify:${roleId}`;
+      const last = Number(localStorage.getItem(key) || 0);
+      if (Date.now() - last < 10 * 60 * 1000) return;
+
+      const roleSnap = await getDoc(doc(db, "roles", roleId));
+      if (!roleSnap.exists()) return;
+      const role = roleSnap.data();
+      const recipients = (role.participants || [])
+        .filter((p: any) => p.uid !== user.uid && p.status !== "declined")
+        .map((p: any) => p.uid);
+      if (!recipients.length) return;
+
+      localStorage.setItem(key, String(Date.now()));
+      await notificationService.notifyMany(recipients, {
+        type: "chat_message",
+        title: `Nova mensagem em "${role.title}"`,
+        body: `${myName(user)}: ${text.slice(0, 80)}`,
+        roleId,
+      });
+    } catch (e) {
+      console.error("Erro ao notificar mensagem:", e);
+    }
+  },
+  async sendMessage(roleId: string, text: string) {
+    const trimmed = text.trim();
+    if (!trimmed) return false;
+    try {
+      const user = await authGuard.ensureAuth();
+      await addDoc(collection(db, "roles", roleId, "messages"), {
+        senderId: user.uid,
+        text: trimmed.slice(0, 1000),
+        createdAt: serverTimestamp(),
+      });
+
+      await this.notifyChatMessage(roleId, user, trimmed);
+      return true;
+    } catch (e) {
+      console.error("Erro ao enviar mensagem:", e);
+      return false;
+    }
+  },
   async volunteerForItem(roleId: string, item: any) {
     try {
       const user = await authGuard.ensureAuth();
@@ -318,24 +459,26 @@ export const roleService = {
 
       if (!result.isConfirmed) return null;
 
-      const roleRef = doc(db, "roles", roleId);
-      const roleSnap = await getDoc(roleRef);
+      {
+        await updateItems(roleId, (items) =>
+          items.map((i) =>
+            i.id === item.id && !i.responsibleId
+              ? {
+                  ...i,
+                  responsibleId: user.uid,
+                  responsibleName: user.displayName || 'Convidado'
+                }
+              : i
+          )
+        );
 
-      if (roleSnap.exists()) {
-        const data = roleSnap.data();
-
-        const updatedItems = data.items.map(i => {
-          if (i.id === item.id) {
-            return {
-              ...i,
-              responsibleId: user.uid,
-              responsibleName: user.displayName || 'Convidado'
-            };
-          }
-          return i;
+        const roleSnap = await getDoc(doc(db, "roles", roleId));
+        await notificationService.notify(roleSnap.data()?.ownerId, {
+          type: "item_taken",
+          title: "Tarefa assumida",
+          body: `${myName(user)} vai levar: ${item.name}`,
+          roleId,
         });
-
-        await updateDoc(roleRef, { items: updatedItems });
 
         Swal.fire({
           toast: true,
@@ -383,6 +526,15 @@ export const roleService = {
 
       await updateDoc(roleRef, {
         participants: arrayUnion(...newParticipants)
+      });
+
+      const me = await authGuard.ensureAuth();
+      const roleSnap = await getDoc(roleRef);
+      await notificationService.notifyMany(uids, {
+        type: "role_invite",
+        title: "Novo rolê!",
+        body: `${myName(me)} te convidou para "${roleSnap.data()?.title || "um rolê"}"`,
+        roleId,
       });
 
       Swal.fire({

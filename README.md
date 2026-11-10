@@ -6,7 +6,7 @@
 
 - **Frontend:** Vue 3 (Composition API & Script Setup)
 - **Styling:** Tailwind CSS (Material Design System)
-- **Backend-as-a-Service:** Firebase (Firestore, Auth, and Hosting)
+- **Backend-as-a-Service:** Firebase (Firestore and Auth), hosted on GitHub Pages
 - **Build Tool:** Vite
 
 **Roles** is a modern social application designed to streamline group gatherings.
@@ -29,7 +29,7 @@ This project uses **GitHub Actions** for Continuous Deployment. Every push to th
 
 1. **Checkout:** Pulls the latest code.
 2. **Build:** Installs dependencies (`npm install`) and builds the project (`npm run build`).
-3. **Deploy:** Automatically pushes the build to **Firebase Hosting**.
+3. **Deploy:** Automatically pushes the build to **GitHub Pages** (`gh-pages`).
 
 This ensures that the live application is always synced with the latest stable code in the repository.
 

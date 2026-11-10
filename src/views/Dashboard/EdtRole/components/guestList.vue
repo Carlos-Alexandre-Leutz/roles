@@ -1,5 +1,5 @@
 <template>
-  <div class="glass-panel p-8 rounded-[2rem] border border-outline-variant/10">
+  <div class="glass-panel p-5 sm:p-8 rounded-[2rem] border border-outline-variant/10">
     <div class="flex justify-between items-center mb-8">
       <div>
         <h3 class="text-2xl font-headline font-bold text-white">

@@ -221,7 +221,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { auth } from "@/services/firebase";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
 import { userService } from "@/services/users/userService.ts";
 
 const router = useRouter();
@@ -265,7 +265,13 @@ const handleRegister = async () => {
       displayName: fullName.value,
     });
     await userService.saveUserProfile();
-    displayFeedback("Conta criada com sucesso! Redirecionando...", false);
+    await sendEmailVerification(userCredential.user).catch((e) =>
+      console.error("Erro ao enviar confirmação de e-mail:", e)
+    );
+    displayFeedback(
+      "Conta criada! Enviamos um e-mail para você confirmar o endereço. Redirecionando...",
+      false
+    );
 
     setTimeout(() => {
       router.push("/dashboard");

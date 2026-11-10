@@ -6,7 +6,7 @@
     >
       <!-- Create New Rolê Modal -->
       <div
-        class="glass-modal w-full max-w-2xl rounded-[2.5rem] p-10 shadow-[0_0_100px_rgba(157,0,255,0.2)] overflow-hidden relative"
+        class="glass-modal w-full max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-[2.5rem] p-6 sm:p-10 shadow-[0_0_100px_rgba(157,0,255,0.2)] relative"
       >
         <!-- Background Glow Decoration -->
         <div

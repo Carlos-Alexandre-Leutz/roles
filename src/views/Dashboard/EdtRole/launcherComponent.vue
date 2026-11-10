@@ -1,18 +1,27 @@
 <template>
   <div class="font-body selection:bg-primary/30">
     <main class="min-h-screen bg-surface">
-      <div class="max-w-[1400px] mx-auto p-8 lg:p-12">
+      <div class="max-w-[1400px] mx-auto p-4 sm:p-8 lg:p-12">
         <section class="mb-12 relative rounded-[2.5rem] overflow-hidden group">
           <div
             class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent z-10"
           ></div>
           <div class="h-80 w-full overflow-hidden">
             <img
-              alt="Brazilian BBQ"
+              v-if="cover.image"
+              :alt="cover.label"
               class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-1000"
-              data-alt="juicy pieces of seasoned meat grilling on a charcoal barbecue with glowing embers and soft smoke in a festive night setting"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc8yq26Evu21Te1JWJhNvPcZ9rNiW8WFbm1AqbrjgWYA8vZhgH2uiuDQPRrxIEPZ4Be3Zo87LnoPC_Wzlz_PkDdPTUnDQ1Km00HtWiMLzgGBEglw0JqZVfu_lRsYN-F6uw629xsC8yYNhmcmd-Yd6kL-wLu6MxNoVVv8rPZwAePDvXn0nTz6nffAXgdkQqL9WCUm1ouqXvxt-nmAzZ_08dINnJu_4mypv2PbXx6QxhFxLm-KOzfChdJKFUNGHRmUfCyY6J64cV1OVB"
+              :src="cover.image"
             />
+            <div
+              v-else
+              class="w-full h-full bg-gradient-to-br flex items-center justify-center"
+              :class="cover.gradient"
+            >
+              <span class="material-symbols-outlined text-white/30 !text-[10rem]">{{
+                cover.icon
+              }}</span>
+            </div>
           </div>
           <div
             class="absolute bottom-0 left-0 p-10 z-20 w-full flex flex-col md:flex-row md:items-end justify-between gap-6"
@@ -90,10 +99,15 @@
               :is-editing="isEditing"
               :data="currentRole"
               @open-modal="showModalChecklistExpenses = true"
+              @refresh="loadRoleData()"
             ></checklistExpenses>
           </div>
           <div class="lg:col-span-4 h-full sticky top-28">
-            <eventChat></eventChat>
+            <eventChat
+              :role-id="roleId"
+              :user-id="userId"
+              :participants="currentRole?.participants || []"
+            ></eventChat>
           </div>
         </div>
       </div>
@@ -126,6 +140,7 @@ import modalChecklistExpenses from "./components/modalChecklistExpenses.vue";
 import modalNewRole from "@/components/modalNewRole/launcherComponent.vue";
 
 import { roleService } from "@/services/roles/roleService.ts";
+import { resolveCover } from "@/data/covers";
 
 const props = defineProps({
   mode: {
@@ -157,6 +172,9 @@ const isConfirmed = ref(props.status === "confirmed");
 const isDeclined = ref(props.status === "declined");
 
 const currentRole = ref(null);
+const cover = computed(() =>
+  resolveCover(currentRole.value?.title, currentRole.value?.cover)
+);
 const loading = ref(true);
 
 async function loadRoleData() {

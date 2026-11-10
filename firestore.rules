@@ -1,0 +1,94 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Os participantes são salvos como { uid, status }; o status muda,
+    // então testamos os três valores possíveis.
+    function isParticipant(role) {
+      return signedIn() && role.participants.hasAny([
+        { 'uid': request.auth.uid, 'status': 'pending' },
+        { 'uid': request.auth.uid, 'status': 'confirmed' },
+        { 'uid': request.auth.uid, 'status': 'declined' }
+      ]);
+    }
+
+    function isOwner(role) {
+      return signedIn() && role.ownerId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == userId;
+    }
+
+    // Notificações: qualquer logado cria (o autor avisa outra pessoa);
+    // só o destinatário lê, marca como lida ou apaga.
+    match /notifications/{notificationId} {
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.userId is string
+        && request.resource.data.read == false;
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+    }
+
+    match /friendships/{friendshipId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.participants;
+
+      allow create: if signedIn()
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.requestedBy == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      // só quem recebeu o convite aceita, e só muda o status
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.participants
+        && resource.data.requestedBy != request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'acceptedAt']);
+
+      allow delete: if signedIn() && request.auth.uid in resource.data.participants;
+    }
+
+    match /roles/{roleId} {
+      // As listas de "meus roles" usam array-contains e o Firestore não
+      // consegue provar a regra de participante numa query, então qualquer
+      // usuário logado lê. As escritas continuam restritas.
+      allow read: if signedIn();
+
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+
+      allow delete: if isOwner(resource.data);
+
+      allow update: if isOwner(resource.data)
+        && request.resource.data.ownerId == resource.data.ownerId
+        || isParticipant(resource.data)
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['participants', 'items', 'settlements', 'updatedAt'])
+        // convidado não adiciona/remove pessoas nem itens, e não apaga pagamentos
+        && request.resource.data.participants.size() == resource.data.participants.size()
+        && request.resource.data.get('items', []).size() == resource.data.get('items', []).size()
+        && request.resource.data.get('settlements', []).size() >= resource.data.get('settlements', []).size();
+
+      match /messages/{messageId} {
+        allow read: if isParticipant(get(/databases/$(database)/documents/roles/$(roleId)).data);
+
+        allow create: if isParticipant(get(/databases/$(database)/documents/roles/$(roleId)).data)
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000;
+
+        allow update: if false;
+        allow delete: if signedIn() && resource.data.senderId == request.auth.uid;
+      }
+    }
+  }
+}

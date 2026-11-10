@@ -23,9 +23,9 @@
         <!-- Left Column: Friends List -->
         <div class="lg:col-span-12 space-y-12">
           <!-- Convites Pendentes -->
-          <pendingInvitations></pendingInvitations>
+          <pendingInvitations @accepted="friendsKey++"></pendingInvitations>
           <!-- Lista de Amigos -->
-          <friendsList></friendsList>
+          <friendsList :key="friendsKey"></friendsList>
         </div>
       </div>
     </div>
@@ -34,6 +34,9 @@
 <script setup>
 import pendingInvitations from "./components/pendingInvitations.vue";
 import friendsList from "./components/friendsList.vue";
+import { ref } from "vue";
+
+const friendsKey = ref(0);
 </script>
 <style>
 .material-symbols-outlined {

@@ -1,6 +1,7 @@
 import { db } from '../firebase';
 import { authGuard } from '../authGuard.ts';
 import { userService } from '../users/userService.ts';
+import { notificationService } from '../notifications/notificationService.ts';
 import {
   collection,
   addDoc,
@@ -11,6 +12,7 @@ import {
   doc,
   updateDoc,
   deleteDoc,
+  getDoc,
 } from "firebase/firestore";
 
 export const friendService = {
@@ -43,6 +45,12 @@ export const friendService = {
         createdAt: serverTimestamp()
       });
 
+      void notificationService.notify(toId, {
+        type: "friend_request",
+        title: "Novo pedido de amizade",
+        body: `${userService.formatName(from.displayName) || "Alguém"} quer ser seu amigo`,
+      });
+
       return { success: true };
     } catch (e) {
       console.error("Erro ao enviar solicitação:", e);
@@ -53,11 +61,13 @@ export const friendService = {
     const user = await authGuard.ensureAuth();
     const q = query(
       collection(db, "friendships"),
-      where("requestedBy", "==", user.uid),
+      where("participants", "array-contains", user.uid),
       where("status", "==", "pending")
     );
     const snap = await getDocs(q);
-    return snap.docs.map(doc => doc.data());
+    return snap.docs
+      .map(doc => doc.data())
+      .filter((req: any) => req.requestedBy === user.uid);
   },
 
   async getIncomingRequests() {
@@ -81,9 +91,18 @@ export const friendService = {
     try {
       const friendshipRef = doc(db, "friendships", friendshipId);
 
+      const me = await authGuard.ensureAuth();
+      const friendshipSnap = await getDoc(friendshipRef);
+
       await updateDoc(friendshipRef, {
         status: 'accepted',
         acceptedAt: serverTimestamp()
+      });
+
+      void notificationService.notify(friendshipSnap.data()?.requestedBy, {
+        type: "friend_accepted",
+        title: "Pedido aceito",
+        body: `${userService.formatName(me.displayName) || "Alguém"} aceitou sua amizade`,
       });
 
       return { success: true };

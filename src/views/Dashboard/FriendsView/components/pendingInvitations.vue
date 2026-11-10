@@ -38,12 +38,15 @@
           <div class="flex items-center gap-2">
             <button
               @click="handleAccept(req.id)"
-              class="px-5 py-2 rounded-full bg-primary text-on-primary text-sm font-bold shadow-[0_0_15px_rgba(219,144,255,0.3)] hover:scale-105 transition-transform"
+              :disabled="busyId === req.id"
+              class="disabled:opacity-60 disabled:pointer-events-none px-5 py-2 rounded-full bg-primary text-on-primary text-sm font-bold shadow-[0_0_15px_rgba(219,144,255,0.3)] hover:scale-105 transition-transform"
             >
-              Aceitar
+              {{ busyId === req.id ? "Aceitando..." : "Aceitar" }}
             </button>
             <button
-              class="px-5 py-2 rounded-full bg-surface-variant text-on-surface-variant text-sm font-bold hover:bg-surface-container-highest transition-colors"
+              @click="handleRemove(req.id, 'Recusar convite?', 'Recusar')"
+              :disabled="busyId === req.id"
+              class="disabled:opacity-60 disabled:pointer-events-none px-5 py-2 rounded-full bg-surface-variant text-on-surface-variant text-sm font-bold hover:bg-surface-container-highest transition-colors"
             >
               Recusar
             </button>
@@ -85,7 +88,9 @@
             </div>
           </div>
           <button
-            class="px-5 py-2 rounded-full border border-outline-variant/30 text-on-surface-variant text-sm font-bold hover:border-error hover:text-error transition-all"
+            @click="handleRemove(req.id, 'Cancelar convite?', 'Cancelar convite')"
+            :disabled="busyId === req.id"
+            class="disabled:opacity-60 disabled:pointer-events-none px-5 py-2 rounded-full border border-outline-variant/30 text-on-surface-variant text-sm font-bold hover:border-error hover:text-error transition-all"
           >
             Cancelar
           </button>
@@ -108,10 +113,14 @@
 import { ref, onMounted } from "vue";
 import { friendService } from "@/services/friends/friendService";
 import { userService } from "@/services/users/userService";
+import Swal from "sweetalert2";
 
 const receivedList = ref([]);
 const sentList = ref([]);
 const loading = ref(true);
+const busyId = ref(null);
+const emit = defineEmits(["accepted"]);
+const dark = { background: "#1e293b", color: "#f8fafc" };
 
 async function loadRequests() {
   loading.value = true;
@@ -141,14 +150,59 @@ async function loadRequests() {
 }
 
 const handleAccept = async (friendshipId) => {
+  if (busyId.value) return;
+  busyId.value = friendshipId;
   try {
     const res = await friendService.acceptFriendRequest(friendshipId);
 
     if (res.success) {
       await loadRequests();
+      emit("accepted");
+      Swal.fire({
+        ...dark,
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Convite aceito!",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } else {
+      throw res.error || new Error("falha");
     }
   } catch (error) {
-    alert("Não foi possível aceitar a amizade agora.");
+    console.error("Erro ao aceitar amizade:", error);
+    Swal.fire({
+      ...dark,
+      icon: "error",
+      title: "Ops!",
+      text: "Não foi possível aceitar a amizade agora.",
+    });
+  } finally {
+    busyId.value = null;
+  }
+};
+
+const handleRemove = async (friendshipId, title, confirmText) => {
+  if (busyId.value) return;
+  const result = await Swal.fire({
+    ...dark,
+    title,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: confirmText,
+    cancelButtonText: "Voltar",
+    confirmButtonColor: "#ef4444",
+  });
+  if (!result.isConfirmed) return;
+
+  busyId.value = friendshipId;
+  const res = await friendService.removeFriend(friendshipId);
+  busyId.value = null;
+  if (res.success) {
+    await loadRequests();
+  } else {
+    Swal.fire({ ...dark, icon: "error", title: "Ops!", text: "Não foi possível concluir agora." });
   }
 };
 

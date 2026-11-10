@@ -1,4 +1,5 @@
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
+import { updateProfile, sendPasswordResetEmail, sendEmailVerification } from 'firebase/auth';
 import { authGuard } from '../authGuard.ts';
 import store from "@/store";
 import {
@@ -11,6 +12,7 @@ import {
   where,
   getDocs,
   limit,
+  updateDoc,
 } from "firebase/firestore";
 
 export const userService = {
@@ -35,6 +37,7 @@ export const userService = {
           displayName: user.displayName.toLowerCase(),
           email: user.email,
           photoURL: user.photoURL || "",
+          emailVerified: false,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
@@ -103,6 +106,85 @@ export const userService = {
       console.error("Erro ao buscar lote de usuários:", e);
       return [];
     }
+  },
+  async getMyProfile() {
+    const user = await authGuard.ensureAuth();
+    const snap = await getDoc(doc(db, "users", user.uid));
+    return {
+      uid: user.uid,
+      email: user.email || "",
+      displayName: user.displayName || "",
+      photoURL: user.photoURL || "",
+      pixKey: "",
+      ...(snap.exists() ? snap.data() : {}),
+    } as any;
+  },
+  async updateMyProfile(data: { displayName: string; photoURL: string; pixKey: string; emailNotifications: boolean }) {
+    const user = await authGuard.ensureAuth();
+    const displayName = data.displayName.trim();
+    if (!displayName) throw new Error("Nome é obrigatório");
+
+    await updateProfile(auth.currentUser || user, { displayName });
+    await updateDoc(doc(db, "users", user.uid), {
+      displayName: displayName.toLowerCase(),
+      photoURL: data.photoURL,
+      pixKey: data.pixKey.trim(),
+      emailNotifications: data.emailNotifications,
+      updatedAt: serverTimestamp(),
+    });
+  },
+  resizeImage(file: File, size = 256): Promise<string> {
+    return new Promise((resolve, reject) => {
+      if (!file.type.startsWith("image/")) return reject(new Error("Arquivo não é imagem"));
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const side = Math.min(img.width, img.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(
+          img,
+          (img.width - side) / 2,
+          (img.height - side) / 2,
+          side,
+          side,
+          0,
+          0,
+          size,
+          size
+        );
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Não foi possível ler a imagem"));
+      };
+      img.src = url;
+    });
+  },
+  async syncEmailVerified() {
+    const user = await authGuard.ensureAuth();
+    await user.reload();
+    const verified = auth.currentUser?.emailVerified === true;
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+    if (snap.exists() && snap.data().emailVerified !== verified) {
+      await updateDoc(ref, { emailVerified: verified });
+    }
+    return verified;
+  },
+  async sendVerificationEmail() {
+    const user = await authGuard.ensureAuth();
+    await sendEmailVerification(auth.currentUser || user);
+  },
+  async sendPasswordReset() {
+    const user = await authGuard.ensureAuth();
+    if (!user.email) throw new Error("Conta sem e-mail");
+    await sendPasswordResetEmail(auth, user.email);
+    return user.email;
   },
   formatName(name: string) {
     if (!name) return '';
