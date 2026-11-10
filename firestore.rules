@@ -75,7 +75,16 @@ service cloud.firestore {
         // convidado não adiciona/remove pessoas nem itens, e não apaga pagamentos
         && request.resource.data.participants.size() == resource.data.participants.size()
         && request.resource.data.get('items', []).size() == resource.data.get('items', []).size()
-        && request.resource.data.get('settlements', []).size() >= resource.data.get('settlements', []).size();
+        && request.resource.data.get('settlements', []).size() >= resource.data.get('settlements', []).size()
+        // entrada pelo link de convite: quem ainda não é participante só
+        // acrescenta a si mesmo (confirmado) e não mexe em mais nada
+        || signedIn()
+        && !isParticipant(resource.data)
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
+        && request.resource.data.participants.size() == resource.data.participants.size() + 1
+        && request.resource.data.participants.hasAll(resource.data.participants)
+        && request.resource.data.participants.hasAny([{ 'uid': request.auth.uid, 'status': 'confirmed' }]);
 
       match /messages/{messageId} {
         allow read: if isParticipant(get(/databases/$(database)/documents/roles/$(roleId)).data);

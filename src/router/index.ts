@@ -13,6 +13,8 @@ import FriendsView from '@/views/Dashboard/FriendsView/launcherComponent.vue';
 import SettingsComponent from '@/components/layout/components/settingsComponent.vue';
 import EdtRole from '@/views/Dashboard/EdtRole/launcherComponent.vue';
 import SearchFriends from '@/views/Dashboard/SearchFriends.vue';
+import InviteView from '@/views/InviteView.vue';
+import { safeRedirect } from '@/services/inviteService.ts';
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -106,6 +108,11 @@ const router = createRouter({
       }
     },
     {
+      path: '/convite/:id',
+      name: 'invite',
+      component: InviteView,
+    },
+    {
       path: '/search-friends',
       name: 'search-friends',
       meta: { requiresAuth: true },
@@ -132,9 +139,9 @@ router.beforeEach(async (to, from, next) => {
   const user = await getCurrentUser();
 
   if (requiresAuth && !user) {
-    next('/login');
+    next({ name: 'login', query: { redirect: to.fullPath } });
   } else if ((to.name === 'login' || to.name === 'register') && user) {
-    next('/dashboard');
+    next(safeRedirect(to));
   } else {
     next();
   }

@@ -116,7 +116,7 @@
                   >
                 </div>
               </div>
-              <RouterLink to="/register">
+              <RouterLink :to="{ name: 'register', query: route.query }">
                 <button
                   class="w-full bg-surface-variant/20 text-on-surface font-semibold py-4 rounded-full hover:bg-surface-variant/40 active:scale-[0.98] transition-all border border-outline-variant/15"
                   id="btn-criar-conta"
@@ -134,11 +134,13 @@
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
+import { safeRedirect } from "@/services/inviteService";
 import { auth } from "@/services/firebase";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 const router = useRouter();
+const route = useRoute();
 
 const email = ref("");
 const password = ref("");
@@ -149,7 +151,7 @@ const isLoading = ref(false);
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      router.push("/dashboard");
+      router.push(safeRedirect(route));
     }
   });
 });
@@ -166,7 +168,7 @@ const handleLogin = async () => {
   try {
     await signInWithEmailAndPassword(auth, email.value, password.value);
     displayFeedback("Bem-vindo! Redirecionando...", false);
-    router.push("/dashboard");
+    router.push(safeRedirect(route));
   } catch (error) {
     console.error(error.code);
     isError.value = true;

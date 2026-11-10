@@ -51,7 +51,14 @@
                 </span>
               </div>
             </div>
-            <div class="flex gap-4">
+            <div class="flex flex-wrap gap-4">
+              <button
+                @click="shareInviteOnWhatsApp(currentRole, roleId)"
+                class="flex items-center gap-2 px-8 py-4 bg-emerald-600/20 backdrop-blur-xl rounded-full font-bold border border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/30 transition-all"
+              >
+                <span class="material-symbols-outlined">share</span>
+                Convidar pelo WhatsApp
+              </button>
               <template v-if="!isOwner">
                 <button
                   @click="handleAccept"
@@ -141,6 +148,7 @@ import modalNewRole from "@/components/modalNewRole/launcherComponent.vue";
 
 import { roleService } from "@/services/roles/roleService.ts";
 import { resolveCover } from "@/data/covers";
+import { shareInviteOnWhatsApp } from "@/services/inviteService.ts";
 
 const props = defineProps({
   mode: {

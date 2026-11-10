@@ -180,7 +180,7 @@
         <div class="mt-8 text-center">
           <p class="text-on-surface-variant text-sm">
             Já tem uma conta?
-            <RouterLink to="/login">
+            <RouterLink :to="{ name: 'login', query: route.query }">
               <a class="text-primary font-bold hover:underline ml-1" href="#">
                 Entrar
               </a>
@@ -219,12 +219,14 @@
 </template>
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
+import { safeRedirect } from "@/services/inviteService";
 import { auth } from "@/services/firebase";
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
 import { userService } from "@/services/users/userService.ts";
 
 const router = useRouter();
+const route = useRoute();
 
 const fullName = ref("");
 const email = ref("");
@@ -274,7 +276,7 @@ const handleRegister = async () => {
     );
 
     setTimeout(() => {
-      router.push("/dashboard");
+      router.push(safeRedirect(route));
     }, 1500);
   } catch (error) {
     console.error(error.code);

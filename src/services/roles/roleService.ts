@@ -72,6 +72,48 @@ export const roleService = {
       throw e;
     }
   },
+  async getInvitePreview(roleId: string) {
+    try {
+      const user = await authGuard.ensureAuth();
+      const snap = await getDoc(doc(db, "roles", roleId));
+      if (!snap.exists()) return null;
+      const role = snap.data();
+      const alreadyIn =
+        role.ownerId === user.uid ||
+        (role.participants || []).some((p: any) => p.uid === user.uid);
+      return { role, alreadyIn };
+    } catch (e) {
+      console.error("Erro ao abrir convite:", e);
+      return null;
+    }
+  },
+  async joinViaInvite(roleId: string) {
+    try {
+      const user = await authGuard.ensureAuth();
+      const roleRef = doc(db, "roles", roleId);
+      await updateDoc(roleRef, {
+        participants: arrayUnion({ uid: user.uid, status: "confirmed" }),
+      });
+      const snap = await getDoc(roleRef);
+      await notificationService.notify(snap.data()?.ownerId, {
+        type: "role_response",
+        title: "Presença confirmada",
+        body: `${myName(user)} entrou pelo link em "${snap.data()?.title || "seu rolê"}"`,
+        roleId,
+      });
+      return true;
+    } catch (e) {
+      console.error("Erro ao entrar pelo convite:", e);
+      Swal.fire({
+        title: "Erro!",
+        text: "Não foi possível entrar no rolê.",
+        icon: "error",
+        background: "#1e293b",
+        color: "#f8fafc",
+      });
+      return false;
+    }
+  },
   async respondToRole(roleId: string, status: 'confirmed' | 'declined') {
     try {
       const user = await authGuard.ensureAuth();
